@@ -17,6 +17,11 @@ Thumbs.db
 # 临时产物
 tmp/
 *.log
+__pycache__/
+*.pyc
+
+# 录屏采集的原始帧（只在本地合成 GIF 用，成品在 docs/demo.gif）
+shots/
 
 # 本地 agent 工作记录，不进公开仓库
 .workbuddy/

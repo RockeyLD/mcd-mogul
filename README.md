@@ -3,7 +3,9 @@
 > 一个用**真实麦当劳菜单**做的后厨做菜游戏。薯条要盯着油锅捞，可乐要按住按钮打到线上，汉堡要照着票子一层一层加料。
 > 参赛项目 · 麦当劳程序员节创意开发大赛 · **非麦当劳官方产品**
 
-![薯条站](docs/shot_fries.png)
+![麦麦大亨 · 后厨](docs/demo.gif)
+
+<sub>↑ 无头 Chrome 里跑机器人真实操作录下来的，不是剪的动画</sub>
 
 ---
 
@@ -113,6 +115,20 @@ NODE_PATH=~/.workbuddy/binaries/node/workspace/node_modules \
 
 输出每天的服务率、完美单、废品、净利，最后给评级与守恒校验。判据写在 [BALANCE.md](./BALANCE.md)。
 
+### 想重录顶部那段演示
+
+`tools/shoot-gif.js` 用 CDP 驱动无头 Chrome，把同一套机器人注入真浏览器跑，再按固定帧率截图 —— 所以录出来的是真在玩，不是拼的动画。
+
+```bash
+# 采集：输出到 shots/<时间戳>/，预热 40 秒让订单攒起来
+node tools/shoot-gif.js shots 16 10 900 980 40
+
+# 合成：自动挑状态最好的一段连续帧（票架不空、切过的工位最多）
+python tools/make-gif.py -o docs/demo.gif -s shots/<时间戳> -w 720 -c 112 -f 10 -n 40
+```
+
+`-n` 是保留多少帧：太小只看到一个工位，太大容易混进空店的片段。
+
 ### 想换成自己附近的店
 
 需要 Node 18+（要 `fetch`）和一个麦当劳 MCP Token（在 [open.mcd.cn](https://open.mcd.cn/mcp) 控制台申请）。
@@ -156,7 +172,10 @@ node tools/pull-mcp.js --dry
 ├── data/snapshot.json       最近一次拉取的真实数据快照（可核对）
 ├── tools/pull-mcp.js        MCP 数据管线：一条命令刷新快照并注入游戏
 ├── tools/harness.js         无头测试台：jsdom 虚拟时钟 + 两个机器人跑完整 5 天
-├── docs/                    README 用的截图（五座工位各一张）
+├── tools/shoot-gif.js       录屏采集：CDP 驱动无头 Chrome，让机器人真的在玩，逐帧截图
+├── tools/make-gif.py        把采集到的帧合成 GIF（全局调色板，避免逐帧闪色）
+├── docs/demo.gif            README 顶部这段真实玩法录屏
+├── docs/                    五座工位各一张截图
 ├── SKILL.md                 打包成 WorkBuddy Skill 的说明
 ├── BALANCE.md               参数表、质量分公式、实测数据
 ├── MCP_INTEGRATION.md       MCP 调用清单与业务价值
@@ -168,7 +187,7 @@ node tools/pull-mcp.js --dry
 
 ## 设计取舍
 
-**为什么不做"配货—库存—定价"那套？** 因为那是表格，不是后厨。真让人有"我在干活"的感觉的，是手上那 3.8 秒。
+**为什么不做"配货—库存—定价"那套？** 因为那是表格，不是后厨。真让人有"我在干活"的感觉的，是手上那 3.3 秒。
 
 **为什么一屏只做一个工位？** 工位同屏时，压力来自"同时看五个倒计时"，那是注意力测试，不是手艺。Papa's 系列证明了：一次专注一个工位、切站有成本，才有节奏感。
 
