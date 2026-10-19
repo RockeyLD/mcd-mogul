@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>麦麦大亨 · 后厨</title>
+<style>
+:root{
+  --bg:#FFF7EE; --card:#FFFFFF; --line:#EBDFD0; --line2:#F5EDE3;
+  --ink:#2C2118; --dim:#9B8B79; --dimmer:#C4B7A6;
+  --red:#DA291C; --red-d:#B01F14; --yellow:#FFC72C; --yellow-d:#E0A800;
+  --green:#2E7D32; --green-l:#66BB6A; --green-d:#1F5723;
+  --burnt:#4A3B2E; --raw:#EBD3A6;
+  --shadow:0 1px 2px rgba(90,70,45,.06),0 6px 16px rgba(90,70,45,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--ink);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;user-select:none;
+}
+#app{height:100%;max-width:960px;margin:0 auto;padding:9px;display:flex;flex-direction:column;gap:7px}
+
+/* ══ HUD ══ */
+.hud{display:flex;gap:6px;flex-wrap:wrap;flex:0 0 auto}
+.it{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:4px 10px;font-size:11.5px;color:var(--dim);box-shadow:var(--shadow);
+  display:flex;align-items:baseline;gap:5px;
+}
+.it b{color:var(--ink);font-size:14.5px;font-weight:650;letter-spacing:-.01em}
+.it.warn b{color:var(--red)}
+.it.good b{color:var(--green)}
+
+/* ══ 面板 ══ */
+.panel{
+  background:var(--card);border:1px solid var(--line);border-radius:13px;
+  padding:7px 8px;display:flex;flex-direction:column;gap:6px;min-height:0;
+  box-shadow:var(--shadow);
+}
+.panel > h3{
+  font-size:9.5px;letter-spacing:.15em;color:var(--dimmer);font-weight:700;
+  flex:0 0 auto;
+}
+
+/* ══ 订单栏 ══ */
+#railPanel{flex:0 0 auto}
+.rail{
+  display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start;
+  max-height:29vh;overflow-y:auto;overflow-x:hidden;padding:1px;
+}
+.rail .none{
+  width:100%;text-align:center;color:var(--dimmer);font-size:11.5px;padding:14px 0;
+}
+.tk{
+  width:164px;flex:0 0 164px;
+  border:1.5px solid var(--line);border-radius:11px;background:#FDFAF5;
+  padding:6px 7px;display:flex;flex-direction:column;gap:5px;
+  animation:pop .22s cubic-bezier(.2,1.5,.5,1);
+  transition:border-color .15s,background .15s,box-shadow .15s;
+}
+@keyframes pop{from{transform:scale(.72);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fly{to{transform:translateY(-16px) scale(.86);opacity:0}}
+.tk.ready{border-color:var(--green-l);background:#F4FCF4;box-shadow:0 0 0 3px rgba(102,187,106,.13)}
+.tk.hot{border-color:#E8A0A0;background:#FFF6F4}
+.tk.going{animation:fly .3s forwards}
+
+.tk-head{display:flex;align-items:center;gap:5px;height:24px}
+.tk-face{width:22px;height:28px;flex:0 0 auto;overflow:hidden}
+.tk-face svg{display:block;width:22px;height:28px;margin-top:1px}
+.tk-no{font-size:10px;font-weight:800;color:var(--dimmer);letter-spacing:.02em}
+.tk-time{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--dim);font-variant-numeric:tabular-nums}
+.tk.hot .tk-time{color:var(--red)}
+
+.tk-items{display:flex;flex-direction:column;gap:4px}
+.li{
+  display:flex;align-items:center;gap:5px;padding:3px 5px;border-radius:7px;
+  border:1.5px solid var(--line);background:#fff;transition:all .15s;flex-wrap:wrap;
+}
+.li svg{width:17px;height:17px;flex:0 0 auto;transition:opacity .15s}
+.li .nm{font-size:10.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+.li .tp{
+  flex:1 0 100%;font-size:8.5px;line-height:1.4;color:var(--dimmer);
+  padding-left:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.li.miss{border-style:dashed;background:#FAF6F0}
+.li.miss svg{opacity:.3}
+.li.miss .nm{color:var(--dim);font-weight:500}
+.li.ok{border-color:var(--green-l);background:#F2FBF2}
+.li.ok .nm{color:var(--green)}
+.li.ok::after{content:'✓';font-size:10px;color:var(--green);font-weight:800}
+
+.tk-pat{height:3.5px;border-radius:2px;background:#EFE5D8;overflow:hidden}
+.tk-pat i{display:block;height:100%;width:100%;background:var(--green-l);border-radius:2px}
+
+.tk-go{
+  border:none;border-radius:8px;padding:5px 0;width:100%;font-family:inherit;
+  font-size:11.5px;font-weight:700;cursor:pointer;
+  background:#EFE7DC;color:#B3A491;transition:all .12s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tk.ready .tk-go{background:var(--green);color:#fff;box-shadow:0 3px 0 var(--green-d)}
+.tk.ready .tk-go:active{transform:translateY(2px);box-shadow:0 1px 0 var(--green-d)}
+
+/* ══ Tabs ══ */
+.tabs{display:flex;gap:6px;flex:0 0 auto}
+.tab{
+  flex:1;position:relative;border:1.5px solid var(--line);background:var(--card);
+  border-radius:11px;padding:8px 6px;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:12px;font-weight:650;color:var(--dim);
+  transition:all .12s;box-shadow:var(--shadow);
+}
+.tab svg{width:19px;height:19px;transition:opacity .12s;opacity:.55}
+.tab.on{background:#FDF4E3;border-color:var(--yellow-d);color:var(--ink)}
+.tab.on svg{opacity:1}
+.tab:active{transform:scale(.98)}
+.tab .badge{
+  position:absolute;top:-6px;right:-5px;min-width:19px;height:19px;padding:0 5px;
+  border-radius:10px;background:var(--red);color:#fff;font-size:10.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;font-style:normal;
+  border:2px solid var(--bg);
+}
+
+/* ══ 工位区 ══ */
+#bench{flex:1 1 auto;min-height:0;justify-content:center}
+
+/* 选品条 */
+.picker{display:flex;gap:6px;flex-wrap:wrap;flex:0 0 auto}
+.pk{
+  flex:1 1 0;min-width:0;border:1.5px solid var(--line);background:#FDFAF5;border-radius:9px;
+  padding:5px 4px;cursor:pointer;font-family:inherit;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:10.5px;font-weight:650;color:var(--dim);transition:all .12s;
+}
+.pk svg{width:18px;height:18px}
+.pk .pr{font-size:9px;color:var(--dimmer);font-weight:500}
+.pk:active{transform:scale(.97)}
+.pk.on{border-color:var(--yellow-d);background:#FFF9E8;color:var(--ink)}
+.pk:disabled{opacity:.4;cursor:default}
+
+/* 薯条站 */
+.slots{display:flex;gap:8px;flex:1 1 auto;min-height:150px;max-height:320px}
+.slot{
+  flex:1;min-width:0;border:1.5px solid var(--line);border-radius:13px;
+  background:#FDFAF5;padding:8px 7px 7px;cursor:pointer;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  transition:border-color .12s,background .12s,transform .05s;
+}
+.slot::before{
+  content:'';position:absolute;left:0;right:0;bottom:46px;height:34px;
+  background:linear-gradient(180deg,rgba(232,168,58,.22),rgba(198,124,26,.30));
+  border-top:1.5px solid rgba(198,124,26,.28);
+  pointer-events:none;
+}
+.slotnm{
+  position:absolute;top:9px;left:6px;right:6px;text-align:center;
+  font-size:10.5px;font-weight:700;color:var(--dim);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.slotbig{
+  position:absolute;top:38%;left:0;right:0;transform:translateY(-50%);
+  text-align:center;font-size:27px;font-weight:800;letter-spacing:-.03em;
+  color:#CFC5B4;font-variant-numeric:tabular-nums;pointer-events:none;
+}
+.slot.ready .slotbig{color:#2E7D20}
+.slot.idle .slotbig{font-size:12px;font-weight:600;color:var(--dimmer);letter-spacing:0}
+.slot.burnt .slotbig{color:var(--burnt);opacity:.75}
+.slot:active{transform:scale(.975)}
+.slot.idle{border-style:dashed;background:#FBF6EE;cursor:default}
+.slot.frying{border-color:var(--yellow-d);background:#FFFCF2}
+.slot.ready{border-color:var(--green-l);background:#F2FBF2;animation:pulse 1s ease-in-out infinite}
+.slot.burnt{border-color:#C9BCAE;background:#F7F3EE}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(102,187,106,.34)}50%{box-shadow:0 0 0 6px rgba(102,187,106,0)}}
+
+.frywrap{flex:1 1 auto;min-height:76px;display:flex;align-items:flex-end;justify-content:center;gap:5px;padding-bottom:14px;transition:opacity .15s}
+.stick{width:13px;border-radius:6px;background:var(--raw);box-shadow:inset 0 0 0 1px rgba(140,110,70,.4);transition:background .18s}
+.slot .lbl{text-align:center;font-size:11px;color:var(--dim);height:17px;font-variant-numeric:tabular-nums}
+.slot.ready .lbl{color:var(--green);font-weight:700}
+.slot.burnt .lbl{color:var(--burnt);font-weight:700}
+.bar{height:5px;border-radius:3px;background:#EFE5D8;margin-top:5px;position:relative;overflow:hidden}
+.bar .zone{position:absolute;top:0;bottom:0;background:rgba(102,187,106,.3);border-radius:3px}
+.bar .fill{position:absolute;top:0;bottom:0;left:0;width:0;background:var(--yellow);border-radius:3px}
+.slot.ready .bar .fill{background:#3E8E42}
+.slot.burnt .bar .fill{background:var(--burnt)}
+.slot .lbl2{text-align:center;font-size:9.5px;color:var(--dimmer);margin-top:3px;height:14px}
+
+/* 饮料站 */
+.drinkwrap{
+  flex:1 1 auto;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;padding:2px 0;min-height:0;
+}
+.machine{
+  flex:1 1 auto;width:min(100%,440px);min-height:0;position:relative;
+  border:1.5px solid var(--line);border-radius:14px;background:#FFFDF8;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 10px 12px;
+}
+.machine-top{
+  position:absolute;top:9px;left:0;right:0;text-align:center;
+  font-size:9.5px;letter-spacing:.14em;color:var(--dimmer);font-weight:700;
+}
+.cupshell{display:flex;flex-direction:column;align-items:center;gap:0;position:relative}
+.nozzle{
+  width:52px;height:22px;background:#D8D2C6;border-radius:7px 7px 4px 4px;
+  border:1.5px solid #C6BFB1;border-bottom:none;position:relative;
+}
+.nozzle::after{
+  content:'';position:absolute;top:21px;left:50%;transform:translateX(-50%);
+  width:7px;height:9px;background:#BFB8AA;border-radius:0 0 3px 3px;
+}
+.cup{
+  width:148px;height:clamp(200px,32vh,300px);
+  border:2px solid var(--line);border-top:none;
+  border-radius:5px 5px 26px 26px;position:relative;overflow:hidden;background:#FDFAF5;flex:0 0 auto;
+  box-shadow:inset 0 -6px 12px rgba(120,100,70,.06),inset 4px 0 8px rgba(255,255,255,.7);
+}
+.drip{width:214px;height:10px;border-radius:5px;background:#E4DCCD;margin-top:10px}
+/* 不要给液面加 transition：高度每帧都在重新赋值，过渡会不停重启、跟不上真实液位，
+   这游戏是按液位判定的，画面不能比状态慢半拍。 */
+.cup .liquid{position:absolute;left:0;right:0;bottom:0;height:0}
+.cup .liquid::after{
+  content:'';position:absolute;left:0;right:0;top:0;height:3px;
+  background:rgba(255,255,255,.45);
+}
+.cup .goal{
+  position:absolute;left:0;right:0;
+  background:rgba(102,187,106,.2);
+  border-top:1.5px dashed rgba(46,125,32,.55);
+  border-bottom:1.5px dashed rgba(46,125,32,.55);
+}
+.cup-mark{position:absolute;right:-40px;font-size:9px;color:var(--dimmer);transform:translateY(50%)}
+.drinkwrap .tap{
+  width:min(340px,86%);border:1.5px solid var(--line);background:#FDFAF5;border-radius:13px;
+  padding:13px 8px;text-align:center;cursor:pointer;font-size:15px;color:var(--dim);
+  font-weight:700;transition:transform .05s,background .12s,border-color .12s;
+  display:flex;flex-direction:column;gap:3px;align-items:center;flex:0 0 auto;
+}
+.tap:active,.tap.on{background:#FFF3D6;border-color:var(--yellow-d);transform:scale(.985)}
+.tap b{font-size:11px;color:var(--dimmer);font-weight:500}
+.tap.ready{border-color:var(--green-l);background:#F2FBF2;color:var(--green)}
+.tap.ready b{color:var(--green)}
+
+/* 组装站 */
+.asm{flex:1 1 auto;display:flex;gap:10px;min-height:0}
+.asm-left{
+  flex:0 0 42%;min-width:172px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1.5px solid var(--line);border-radius:12px;background:#FDFAF5;padding:8px 8px 26px;position:relative;
+  overflow:hidden;
+}
+.asm-left::after{
+  content:'';position:absolute;left:12%;right:12%;bottom:0;height:7px;
+  background:#E4DCCD;border-radius:6px 6px 0 0;
+}
+.asm-tag{
+  position:absolute;top:8px;left:0;right:0;text-align:center;
+  font-size:10.5px;color:var(--dim);letter-spacing:.02em;font-weight:650;
+}
+.asm-cnt{
+  position:absolute;bottom:12px;left:0;right:0;text-align:center;
+  font-size:10px;color:var(--dimmer);font-variant-numeric:tabular-nums;
+}
+/* 汉堡叠层：column-reverse —— DOM 里第一个元素在最下面（面包底），往上越堆越高。
+   每种配料按形状给不同高度/宽度/圆角，光靠颜色区分的话酱和面包底会糊成一片。 */
+.stack{display:flex;flex-direction:column-reverse;align-items:center;gap:0;width:100%;padding-bottom:24px}
+.layer{
+  height:14px;border-radius:7px;width:92%;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(120,95,60,.20),inset 0 -2px 0 rgba(0,0,0,.07);
+  animation:drop .16s ease-out;
+}
+.layer.s-blob{height:13px;border-radius:9px}
+.layer.s-cheese{height:11px;width:96%;border-radius:3px}
+.layer.s-leaf{height:16px;width:100%;border-radius:5px 5px 10px 10px}
+.layer.s-pickle{height:12px;width:86%;border-radius:9px}
+.layer.s-dice{height:11px;width:84%;border-radius:9px}
+.layer.ghost{
+  background:transparent!important;box-shadow:none;border:1.5px dashed #DFD3C2;
+  opacity:.75;animation:none;
+}
+@keyframes drop{from{transform:translateY(-14px);opacity:.2}to{transform:translateY(0);opacity:1}}
+.bun{
+  height:25px;width:96%;background:#E0B075;
+  border-radius:6px 6px 17px 17px;
+  box-shadow:inset 0 0 0 1px #C9954F,inset 0 4px 0 rgba(255,255,255,.3);
+}
+.bun.top{
+  height:29px;border-radius:17px 17px 6px 6px;background:#E8BE85;position:relative;
+  box-shadow:inset 0 0 0 1px #C9954F,inset 0 -3px 0 rgba(0,0,0,.05);
+}
+.bun.top::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:
+    radial-gradient(circle 1.6px at 26% 52%,#FFF6E0 100%,transparent 0),
+    radial-gradient(circle 1.6px at 46% 34%,#FFF6E0 100%,transparent 0),
+    radial-gradient(circle 1.6px at 66% 58%,#FFF6E0 100%,transparent 0),
+    radial-gradient(circle 1.4px at 82% 40%,#FFF6E0 100%,transparent 0);
+}
+.asm-right{flex:1 1 auto;display:flex;flex-direction:column;gap:8px;min-width:0}
+.asm-ticket{
+  flex:0 0 auto;border:1.5px solid var(--line);border-radius:10px;background:#FDFAF5;
+  padding:8px 10px;display:flex;flex-direction:column;gap:5px;
+}
+.asm-ticket .ttl{font-size:12px;font-weight:750;display:flex;align-items:center;gap:6px}
+.asm-ticket .ttl svg{width:17px;height:17px}
+.asm-ticket .sub2{font-size:9.5px;color:var(--dimmer)}
+.need{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.need span{
+  font-size:10px;padding:2px 7px 2px 3px;border-radius:20px;background:#fff;
+  border:1px solid var(--line);color:var(--dim);transition:all .15s;
+  display:flex;align-items:center;gap:4px;
+}
+.need span i{
+  width:14px;height:14px;border-radius:50%;background:var(--line2);color:var(--dim);
+  font-size:8.5px;font-style:normal;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.need span.done{background:#EDF7ED;border-color:var(--green-l);color:var(--green);text-decoration:line-through}
+.need span.done i{background:var(--green);color:#fff}
+.need span.next{border-color:var(--yellow-d);background:#FFF9E8;color:var(--ink);font-weight:700}
+.need span.next i{background:var(--yellow-d);color:#fff}
+.asm-pal{flex:1 1 auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+.pal-ttl{font-size:9.5px;color:var(--dimmer);letter-spacing:.08em}
+.ingr{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1 1 auto;align-content:start;overflow-y:auto}
+.ig{
+  border:1.5px solid var(--line);background:#fff;border-radius:9px;
+  padding:9px 10px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:650;color:var(--ink);
+  display:flex;align-items:center;gap:6px;transition:all .1s;text-align:left;
+}
+.ig svg{width:16px;height:16px;flex:0 0 auto}
+.ig:active{transform:scale(.96)}
+.ig:hover{border-color:var(--yellow-d)}
+.ig.fin{
+  grid-column:1/-1;justify-content:center;font-weight:800;font-size:12px;
+  background:var(--red);border-color:var(--red);color:#fff;padding:11px;
+}
+.ig.fin:disabled{background:#EFE7DA;border-color:#E2D8C8;color:var(--dimmer);cursor:default}
+.ig.shake{animation:shk .3s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.asm-void{
+  flex:1;display:flex;flex-direction:column;gap:10px;min-height:0;justify-content:center;
+}
+.asm-void .bv-grid{align-content:center}
+.idle-note{text-align:center;color:var(--dimmer);font-size:11.5px;padding:2px}
+.idle-note b{color:var(--dim)}
+.bv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;overflow-y:auto}
+.bv{
+  border:1.5px solid var(--line);border-radius:11px;background:#FDFAF5;
+  padding:9px 10px;display:flex;flex-direction:column;gap:2px;
+}
+.bv-ic{height:26px;display:flex;align-items:center}
+.bv-nm{font-size:11.5px;font-weight:750;color:var(--ink)}
+.bv-pr{font-size:10px;color:var(--dim)}
+.bv-tp{font-size:9px;color:var(--dimmer);line-height:1.55;margin-top:2px}
+.asm-empty b{color:var(--dim);font-size:12.5px;font-weight:700}
+
+/* ══ 出餐架 ══ */
+#shelfPanel{flex:0 0 auto}
+.shelf{display:flex;gap:6px;flex-wrap:wrap}
+.sh{
+  width:36px;height:36px;border:1.5px dashed var(--line);border-radius:9px;
+  background:#FDFAF5;display:flex;align-items:center;justify-content:center;
+  transition:all .12s;position:relative;
+}
+.sh.has{border-style:solid;border-color:var(--yellow-d);background:#FFFBEE;cursor:pointer}
+.sh.has:active{transform:scale(.93)}
+.sh svg{width:22px;height:22px}
+.sh .q{position:absolute;right:-3px;bottom:-3px;font-size:8.5px;font-weight:800;color:#fff;
+  background:var(--green);border-radius:4px;padding:0 3px;line-height:12px}
+.shelf-note{margin-left:auto;font-size:10.5px;color:var(--dimmer);align-self:center}
+
+/* ══ 顾客 / 飘字 / 提示 ══ */
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-46px);opacity:0}}
+.pop{position:fixed;font-size:16px;font-weight:800;pointer-events:none;z-index:99;
+  animation:rise .85s ease-out forwards;text-shadow:0 1px 0 #fff,0 0 8px #fff}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+  background:rgba(44,33,24,.92);color:#fff;padding:8px 18px;border-radius:20px;
+  font-size:13px;z-index:100;pointer-events:none;animation:tst 1.4s forwards;
+  max-width:88vw;text-align:center;
+}
+@keyframes tst{0%{opacity:0;transform:translate(-50%,8px)}15%,70%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-6px)}}
+
+/* ══ 按钮 / 面板页 ══ */
+.btn{
+  border:none;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:transform .06s,filter .12s;
+  background:var(--red);color:#fff;box-shadow:0 4px 0 var(--red-d);
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--red-d)}
+.btn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:0 4px 0 var(--red-d)}
+.sheet{
+  flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:15px;padding:18px;text-align:center;overflow-y:auto;
+}
+.sheet h1{font-size:25px;font-weight:800;letter-spacing:-.02em}
+.sheet .sub{color:var(--dim);font-size:13.5px;max-width:440px;line-height:1.75}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:15px 18px;width:100%;max-width:420px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:11px;
+}
+.row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:3px 2px}
+.row .k{color:var(--dim)}
+.row .v{font-weight:650;font-variant-numeric:tabular-nums}
+.row.big{font-size:15px;padding-top:10px;border-top:1.5px solid var(--line2)}
+.row.big .v{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.v.pos{color:var(--green)} .v.neg{color:var(--red)}
+.grade{font-size:54px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.hint{font-size:12px;color:var(--dimmer);max-width:430px;line-height:1.75}
+.legend{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;font-size:11px;color:var(--dim)}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.src{font-size:10.5px;color:var(--dimmer);text-align:center;line-height:1.7}
+.src b{color:var(--dim);font-weight:600}
+
+@media(max-width:600px){
+  .tk{width:calc(50% - 4px);flex:0 0 calc(50% - 4px)}
+  .cup{width:92px;height:clamp(140px,22vh,180px)}
+  .asm{gap:7px}
+  .asm-left{flex:0 0 40%;min-width:120px}
+  .bv-grid{grid-template-columns:repeat(2,1fr)}
+  .slotbig{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- 由 tools/pull-mcp.js 注入真实 MCP 快照 -->
+<script id="mcd-data" type="application/json">
+{
+  "meta": {
+    "source": "麦当劳 MCP（mcp.mcd.cn）",
+    "pulledAt": "2026-10-19 08:58:07",
+    "store": {
+      "storeCode": "1421136",
+      "storeName": "麦当劳深圳腾讯总部园区一店餐厅",
+      "address": "大铲湾南部企鹅岛4栋公寓地上一层"
+    },
+    "campaign": {
+      "date": "2026-10-19",
+      "title": "超值𝟗.𝟗元早餐两件套陪你开工啦😋",
+      "highlight": "9.9元超值早餐正式上新!"
+    }
+  },
+  "stations": [
+    {
+      "key": "fries",
+      "label": "薯条站",
+      "kind": "fryer",
+      "hint": "下锅 → 绿区捞出，过火就焦"
+    },
+    {
+      "key": "drink",
+      "label": "饮料站",
+      "kind": "pour",
+      "hint": "按住 → 绿区松手，满溢作废"
+    },
+    {
+      "key": "assembly",
+      "label": "组装站",
+      "kind": "assemble",
+      "hint": "照着单子依序加配料"
+    }
+  ],
+  "dishes": {
+    "1100": {
+      "code": "1100",
+      "name": "巨无霸",
+      "short": "巨无霸",
+      "price": 26,
+      "originalPrice": 26,
+      "cost": 9.1,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png",
+      "nutrition": {
+        "kcal": 513,
+        "protein": 27,
+        "fat": 26,
+        "carb": 42,
+        "sodium": 961
+      },
+      "recipe": [
+        "巨无霸酱",
+        "吉士",
+        "生菜",
+        "酸黄瓜",
+        "洋葱粒"
+      ]
+    },
+    "1120": {
+      "code": "1120",
+      "name": "双层吉士汉堡",
+      "short": "双层吉士汉堡",
+      "price": 23,
+      "originalPrice": 23,
+      "cost": 8,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png",
+      "nutrition": {
+        "kcal": 429,
+        "protein": 27,
+        "fat": 22,
+        "carb": 31,
+        "sodium": 1017
+      },
+      "recipe": [
+        "吉士",
+        "酸黄瓜",
+        "洋葱粒",
+        "番茄酱",
+        "芥末酱"
+      ]
+    },
+    "1401": {
+      "code": "1401",
+      "name": "麦乐鸡",
+      "short": "麦乐鸡",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png",
+      "nutrition": {
+        "kcal": 213,
+        "protein": 12,
+        "fat": 12,
+        "carb": 13,
+        "sodium": 422
+      },
+      "recipe": []
+    },
+    "1406": {
+      "code": "1406",
+      "name": "板烧鸡腿堡",
+      "short": "板烧鸡腿堡",
+      "price": 24,
+      "originalPrice": 24,
+      "cost": 8.4,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png",
+      "nutrition": {
+        "kcal": 391,
+        "protein": 23,
+        "fat": 17,
+        "carb": 35,
+        "sodium": 1041
+      },
+      "recipe": [
+        "烤味酱",
+        "切块生菜"
+      ]
+    },
+    "1440": {
+      "code": "1440",
+      "name": "麦辣鸡腿汉堡",
+      "short": "麦辣鸡腿汉堡",
+      "price": 23,
+      "originalPrice": 23,
+      "cost": 8,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png",
+      "nutrition": {
+        "kcal": 485,
+        "protein": 24,
+        "fat": 24,
+        "carb": 42,
+        "sodium": 1208
+      },
+      "recipe": [
+        "麦香鸡酱",
+        "切块生菜"
+      ]
+    },
+    "1450": {
+      "code": "1450",
+      "name": "麦香鸡",
+      "short": "麦香鸡",
+      "price": 17,
+      "originalPrice": 17,
+      "cost": 5.9,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png",
+      "nutrition": {
+        "kcal": 369,
+        "protein": 15,
+        "fat": 17,
+        "carb": 39,
+        "sodium": 731
+      },
+      "recipe": [
+        "麦香鸡酱",
+        "生菜"
+      ]
+    },
+    "1600": {
+      "code": "1600",
+      "name": "麦香鱼",
+      "short": "麦香鱼",
+      "price": 22.5,
+      "originalPrice": 22.5,
+      "cost": 7.9,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png",
+      "nutrition": {
+        "kcal": 325,
+        "protein": 16,
+        "fat": 13,
+        "carb": 35,
+        "sodium": 556
+      },
+      "recipe": [
+        "麦香鱼酱",
+        "吉士"
+      ]
+    },
+    "1700": {
+      "code": "1700",
+      "name": "麦辣鸡翅",
+      "short": "麦辣鸡翅",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png",
+      "nutrition": {
+        "kcal": 224,
+        "protein": 13,
+        "fat": 15,
+        "carb": 9,
+        "sodium": 537
+      },
+      "recipe": []
+    },
+    "2430": {
+      "code": "2430",
+      "name": "【美汁源】“黄金橙橙”",
+      "short": "黄金橙橙",
+      "price": 13,
+      "originalPrice": 13,
+      "cost": 4.6,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20240904/product/MS_2430_320.png",
+      "nutrition": {
+        "kcal": 165,
+        "protein": 0,
+        "fat": 0,
+        "carb": 41,
+        "sodium": 53
+      },
+      "recipe": []
+    },
+    "3010": {
+      "code": "3010",
+      "name": "雪碧",
+      "short": "雪碧",
+      "price": 9.5,
+      "originalPrice": 9.5,
+      "cost": 3.3,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G3010_320.png",
+      "nutrition": {
+        "kcal": 105,
+        "protein": 0,
+        "fat": 0,
+        "carb": 26,
+        "sodium": 29
+      },
+      "recipe": []
+    },
+    "4810": {
+      "code": "4810",
+      "name": "薯条",
+      "short": "薯条",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1747877491921.png",
+      "nutrition": {
+        "kcal": 289,
+        "protein": 4,
+        "fat": 12,
+        "carb": 38,
+        "sodium": 165
+      },
+      "recipe": []
+    },
+    "514782": {
+      "code": "514782",
+      "name": "脆脆薯条",
+      "short": "脆脆薯条",
+      "price": 16,
+      "originalPrice": 16,
+      "cost": 5.6,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_514782_320_1747877523158.png",
+      "nutrition": {
+        "kcal": 279,
+        "protein": 4,
+        "fat": 14,
+        "carb": 32,
+        "sodium": 540
+      },
+      "recipe": []
+    },
+    "9900008751": {
+      "code": "9900008751",
+      "name": "可乐",
+      "short": "可乐",
+      "price": 9.5,
+      "originalPrice": 9.5,
+      "cost": 3.3,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.gif",
+      "nutrition": {
+        "kcal": 147,
+        "protein": 0,
+        "fat": 0,
+        "carb": 36,
+        "sodium": 0
+      },
+      "recipe": []
+    }
+  },
+  "economy": {
+    "days": 5,
+    "dayMs": 60000,
+    "startCash": 1200,
+    "rent": 40,
+    "targetCash": 2000,
+    "cogsRate": 0.35
+  }
+}
+</script>
+
+<script>
+(function(){
+'use strict';
+
+/* ════════════════ 数据 ════════════════ */
+var DATA = JSON.parse(document.getElementById('mcd-data').textContent);
+var DISH  = DATA.dishes || {};
+var ECON  = DATA.economy || {};
+var META  = DATA.meta || {};
+
+/* 工位参数 */
+var FRYER  = { slots: 3, ms: 3800, rawUntil: 0.55 };
+var DRINK  = { ms: 1900, low: 0.66, high: 0.94 };
+var PERFECT_Q = 0.85;
+var GOOD_Q    = 0.55;
+var SHELF_CAP = 9;
+var MAX_ORDERS = 6;
+var TIP_PERFECT = 0.2, TIP_GOOD = 0.1;
+
+/* 饮品颜色（真实商品编码 → 液体颜色） */
+var CUP_COLOR = {
+  '9900008751': '#3D2416',   // 可乐
+  '3010':       '#CFE9C4',   // 雪碧
+  '2430':       '#F5A623'    // 黄金橙橙
+};
+
+/* 颜色常量：JS 里给 style.background / style.color 赋 'var(--x)' 时
+   Chrome 的 CSSOM 不会解析这个简写，会静默丢掉声明（实测掉回 CSS 类里的值）。
+   所以凡是从 JS 写颜色，一律用真实色值，与 :root 保持一致。 */
+var COL = {
+  red:'#DA291C', green:'#2E7D32', greenL:'#66BB6A', greenD:'#1F5723',
+  yellow:'#FFC72C', yellowD:'#E0A800', amber:'#F0B429',
+  burnt:'#4A3B2E', raw:'#EBD3A6', ink:'#2C2118'
+};
+
+/* 配料视觉：真人菜单里的酱/菜，用自定义 SVG 形状 + 配色，不用 emoji */
+var TOPPING_STYLE = {
+  '巨无霸酱':   { c:'#C8642B', s:'blob' },
+  '烤味酱':     { c:'#8C4A2F', s:'blob' },
+  '麦香鸡酱':   { c:'#E0A03A', s:'blob' },
+  '麦香鱼酱':   { c:'#EBC96A', s:'blob' },
+  '番茄酱':     { c:'#C92D1E', s:'blob' },
+  '芥末酱':     { c:'#D9B520', s:'blob' },
+  '吉士':       { c:'#FFC72C', s:'cheese' },
+  '生菜':       { c:'#4E9B3E', s:'leaf' },
+  '切块生菜':   { c:'#4E9B3E', s:'leaf' },
+  '酸黄瓜':     { c:'#7BA05B', s:'pickle' },
+  '洋葱粒':     { c:'#C9A8C4', s:'dice' }
+};
+function toppingStyle(n){
+  return TOPPING_STYLE[n] || { c:'#B9A894', s:'blob' };
+}
+
+/* ════════════════ 状态 ════════════════ */
+var S = null;
+var app = document.getElementById('app');
+var tkEls = {};
+var lastT = 0, raf = null, uid = 1;
+var audioOn = true;
+
+function newState(){
+  return {
+    phase: 'title', day: 1, cash: ECON.startCash || 1200,
+    tab: 'fries',
+    shelf: [],
+    orders: [],
+    slots: [],
+    cup: { fill: 0, pouring: false, code: null },
+    build: null,
+    spawnAcc: 0, timeLeft: 0, cfg: null,
+    stats: null, history: []
+  };
+}
+
+/* ════════════════ 音效 ════════════════ */
+var AC = null;
+function beep(freq, dur, type, vol){
+  if(!audioOn) return;
+  try{
+    if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, AC.currentTime);
+    g.gain.setValueAtTime(vol || 0.05, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  }catch(e){}
+}
+function sfxGood(){ beep(880,.09,'sine',.05); setTimeout(function(){ beep(1320,.11,'sine',.045); },70); }
+function sfxBad(){ beep(150,.22,'sawtooth',.04); }
+function sfxCash(){ beep(1180,.07,'triangle',.05); setTimeout(function(){ beep(1560,.09,'triangle',.045); },55); }
+function sfxClick(){ beep(520,.035,'square',.022); }
+
+/* ════════════════ 工具 ════════════════ */
+function yen(n){ return '¥' + Math.round(n); }
+function signedYen(n){ var v = Math.round(n); return (v>0?'+':v<0?'-':'') + '¥' + Math.abs(v); }
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+var _toastAt = {};
+function toast(msg){
+  var now = Date.now();
+  if(_toastAt[msg] && now - _toastAt[msg] < 800) return;
+  _toastAt[msg] = now;
+  var t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.remove(); }, 1400);
+}
+function popText(x, y, text, color){
+  var p = document.createElement('div');
+  p.className = 'pop'; p.textContent = text;
+  p.style.color = color;
+  p.style.left = (x - 16) + 'px'; p.style.top = (y - 10) + 'px';
+  document.body.appendChild(p);
+  setTimeout(function(){ if(p.parentNode) p.remove(); }, 860);
+}
+
+/* ════════════════ 图形 ════════════════ */
+function friesSVG(size, color){
+  var s = size || 22, c = color || '#FFC72C';
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<g fill="'+c+'"><rect x="8.4" y="4" width="2.4" height="12" rx="1.2"/>' +
+    '<rect x="11" y="1.6" width="2.4" height="14.4" rx="1.2"/>' +
+    '<rect x="13.6" y="3" width="2.4" height="13" rx="1.2"/></g>' +
+    '<path d="M6.6 10.4h10.8l-1.5 11a1 1 0 0 1-1 .86H9.1a1 1 0 0 1-1-.86z" fill="#DA291C"/>' +
+    '<path d="M6.6 10.4h10.8l-.32 2.4H6.92z" fill="#B01F14" opacity=".55"/></svg>';
+}
+function nuggetSVG(size){
+  var s = size || 22;
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<path d="M4 13.5c0-2.4 1.7-4.3 4-4.6 1-.9 2.6-1.2 3.8-.5 1.5-.6 3.3.1 4 1.6 ' +
+    '1.7.5 2.8 2 2.8 3.7 0 2-1.6 3.5-3.6 3.5H7.6C5.6 17.2 4 15.6 4 13.5z" fill="#E0A83C"/>' +
+    '<path d="M6.5 12.2c1.4-1 3-1.4 4.6-1.1" stroke="#C88A22" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>';
+}
+function wingSVG(size){
+  var s = size || 22;
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<path d="M5 17c0-4.4 2.8-8.6 7-9.8l3.6 1.4c1.3.5 2 1.9 1.6 3.2l-1.4 4.5c-.4 1.2-1.5 2-2.8 2H5z" fill="#C9762C"/>' +
+    '<path d="M14.5 8.6c1.6-.6 3.4.1 4.1 1.6" stroke="#A75C1D" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>';
+}
+function cupSVG(size, code){
+  var s = size || 22, c = CUP_COLOR[code] || '#3D2416';
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<path d="M7.4 4h9.2l-1.1 16.1a1.2 1.2 0 0 1-1.2 1.1h-4.6a1.2 1.2 0 0 1-1.2-1.1z" fill="#E8E2D8"/>' +
+    '<path d="M7.85 9.6h8.3l-.75 10.5a1.2 1.2 0 0 1-1.2 1.1h-4.4a1.2 1.2 0 0 1-1.2-1.1z" fill="'+c+'"/>' +
+    '<rect x="6.6" y="1.6" width="10.8" height="2.6" rx="1.3" fill="#DA291C"/>' +
+    '<path d="M11.2 4v-2M13.4 4v-2" stroke="#FFF" stroke-width="1.1" stroke-linecap="round" opacity=".8"/></svg>';
+}
+function burgerSVG(size){
+  var s = size || 22;
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<path d="M2.6 8.6C2.6 5.6 6.8 3.2 12 3.2s9.4 2.4 9.4 5.4z" fill="#E8BE85" stroke="#C9954F" stroke-width=".9"/>' +
+    '<circle cx="8.4" cy="6.4" r=".8" fill="#D9A96A"/><circle cx="12.6" cy="5.6" r=".8" fill="#D9A96A"/>' +
+    '<circle cx="16" cy="6.8" r=".8" fill="#D9A96A"/>' +
+    '<rect x="2.2" y="9" width="19.6" height="2.6" rx="1.3" fill="#4E9B3E"/>' +
+    '<rect x="2.6" y="11.6" width="18.8" height="2.8" rx="1.4" fill="#FFC72C"/>' +
+    '<path d="M2.8 14.4h18.4l-1 3.2a2 2 0 0 1-1.9 1.4H5.7a2 2 0 0 1-1.9-1.4z" fill="#7C4A26"/>' +
+    '<path d="M3.2 17.4h17.6c-.3 1.7-1.7 2.9-3.4 2.9H6.6c-1.7 0-3.1-1.2-3.4-2.9z" fill="#E8BE85" stroke="#C9954F" stroke-width=".9"/></svg>';
+}
+function toppingSVG(name, size){
+  var st = toppingStyle(name), s = size || 14, c = st.c;
+  var body;
+  if(st.s === 'cheese')      body = '<rect x="3" y="5" width="18" height="14" rx="2" fill="'+c+'"/><path d="M6 9h5M13 13h5" stroke="#E0A800" stroke-width="1.2" stroke-linecap="round"/>';
+  else if(st.s === 'leaf')   body = '<path d="M3 15c2-5 5-8 9-8s7 3 8 8c-3-2-5-2-8 0-3-2-6-2-9 0z" fill="'+c+'"/><path d="M7 13c2-2 4-3 6-3" stroke="#3C7A2E" stroke-width="1.1" stroke-linecap="round" fill="none"/>';
+  else if(st.s === 'pickle') body = '<circle cx="12" cy="12" r="8" fill="'+c+'"/><circle cx="9.5" cy="10" r="1.4" fill="#65874C"/><circle cx="14" cy="14" r="1.2" fill="#65874C"/>';
+  else if(st.s === 'dice')   body = '<rect x="4" y="7" width="4.4" height="4.4" rx="1.2" fill="'+c+'"/><rect x="10" y="5" width="4.4" height="4.4" rx="1.2" fill="'+c+'"/><rect x="15" y="9" width="4.4" height="4.4" rx="1.2" fill="'+c+'"/><rect x="8" y="13" width="4" height="4" rx="1.1" fill="'+c+'"/><rect x="14" y="15" width="3.6" height="3.6" rx="1" fill="'+c+'"/>';
+  else                       body = '<path d="M12 3.5c4.5 0 8 3 8 6.8 0 4-3.2 7-7.4 7-1.2 0-2.3-.2-3.2-.7-1 .9-2.4 1.4-4.1 1.4.8-1.1 1.1-2 1-3.2-.8-1.2-1.3-2.7-1.3-4.3 0-4 3.3-7 7-7z" fill="'+c+'"/>';
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">'+body+'</svg>';
+}
+function dishIcon(code, size){
+  var d = DISH[code];
+  if(!d) return burgerSVG(size || 22);
+  if(d.station === 'drink')    return cupSVG(size, code);
+  if(d.station === 'assembly') return burgerSVG(size);
+  if(code === '1401')          return nuggetSVG(size);
+  if(code === '1700')          return wingSVG(size);
+  return friesSVG(size, code === '514782' ? '#E8A93C' : '#FFC72C');
+}
+function bodySVG(hue, w){
+  var s = w || 22, h = Math.round(s * 28 / 22);
+  var h1 = 'hsl('+hue+',58%,74%)', h2 = 'hsl('+hue+',50%,58%)', h3 = 'hsl('+hue+',45%,44%)';
+  return '<svg viewBox="0 0 22 28" width="'+s+'" height="'+h+'" aria-hidden="true">' +
+    '<circle cx="11" cy="7" r="5.4" fill="'+h1+'" stroke="'+h3+'" stroke-width="1"/>' +
+    '<path d="M4.2 28v-8.6a6.8 6.8 0 0 1 13.6 0V28z" fill="'+h2+'" stroke="'+h3+'" stroke-width="1"/></svg>';
+}
+
+/* ════════════════ 菜单分组 ════════════════ */
+function dishesOf(station){
+  return Object.keys(DISH).filter(function(k){ return DISH[k].station === station; });
+}
+function sig(toppings){
+  return (toppings || []).slice().sort().join('|');
+}
+
+/* ════════════════ 一天配置 ════════════════ */
+function dayCfg(day){
+  return {
+    interval: Math.max(3400, 5400 - (day-1) * 420),
+    patience: Math.max(15000, 22000 - (day-1) * 1500),
+    duration: ECON.dayMs || 60000
+  };
+}
+
+/* 生成一张订单：1~3 件，菜品与配料全部来自真实菜单 */
+function makeOrderWant(day){
+  var r = Math.random(), n;
+  if(day <= 1)      n = 1;
+  else if(day <= 3) n = r < 0.55 ? 1 : 2;
+  else              n = r < 0.32 ? 1 : (r < 0.78 ? 2 : 3);
+
+  var fry = dishesOf('fries'), drk = dishesOf('drink'), asm = dishesOf('assembly');
+  var want = [];
+  for(var i = 0; i < n; i++){
+    var roll = Math.random();
+    var pool = roll < 0.34 ? fry : roll < 0.64 ? drk : asm;
+    if(!pool.length) pool = Object.keys(DISH);
+    var code = pool[(Math.random() * pool.length) | 0];
+    var d = DISH[code];
+    var toppings = null;
+    if(d.station === 'assembly' && d.recipe && d.recipe.length){
+      toppings = d.recipe.slice();
+      // 15% 的顾客会挑掉一项配料（"不要酸黄瓜"）
+      if(Math.random() < 0.15 && toppings.length > 1){
+        toppings.splice((Math.random() * toppings.length) | 0, 1);
+      }
+    }
+    want.push({ code: code, toppings: toppings });
+  }
+  return want;
+}
+
+/* ════════════════ 开局说明 ════════════════ */
+function renderTitle(){
+  var store = (META.store && META.store.storeName) ? META.store.storeName : '示例门店';
+  var camp = META.campaign && META.campaign.title ? META.campaign.title : '';
+  var n = Object.keys(DISH).length;
+  app.innerHTML =
+  '<div class="sheet">' +
+    '<div>' +
+      '<h1>麦麦大亨 · 后厨</h1>' +
+      '<p class="sub" style="margin-top:8px">顾客进门把单子挂上，你照着单子做。<br>' +
+        '三座工位，轮着跑。</p>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="row"><span class="k">' + friesSVG(18) + ' 薯条站</span><span class="v">选品 → 下锅 → 绿区捞出</span></div>' +
+      '<div class="row"><span class="k">' + cupSVG(18) + ' 饮料站</span><span class="v">选品 → 按住 → 绿区松手</span></div>' +
+      '<div class="row"><span class="k">' + burgerSVG(18) + ' 组装站</span><span class="v">按单子逐层加配料</span></div>' +
+      '<div class="row"><span class="k">出餐架</span><span class="v">做好的先摆着，凑够就送</span></div>' +
+    '</div>' +
+    '<button class="btn" id="go" style="min-width:200px">开门营业</button>' +
+    '<p class="hint">一天 ' + Math.round((ECON.dayMs||60000)/1000) + ' 秒，共 ' + (ECON.days||5) + ' 天。做得越准，小费越多。</p>' +
+    '<p class="src">门店 <b>' + esc(store) + '</b> · 菜单 <b>' + n + ' 款真实在售</b>' +
+      (camp ? '<br>今日活动 <b>' + esc(camp) + '</b>' : '') +
+      '<br>数据来自麦当劳 MCP（mcp.mcd.cn）' +
+      '<br>非麦当劳官方产品 · 麦当劳程序员节创意开发大赛参赛作品</p>' +
+  '</div>';
+  el('go').addEventListener('click', startDay);
+}
+
+/* ════════════════ 开店 · 营业 ════════════════ */
+function startDay(){
+  S.cfg = dayCfg(S.day);
+  S.slots = [];
+  for(var i = 0; i < FRYER.slots; i++) S.slots.push({ st:'idle', t:0, code:null });
+  S.cup = { fill:0, pouring:false, code:null };
+  S.build = null;
+  S.shelf = [];
+  S.orders = [];
+  S.spawnAcc = S.cfg.interval * 0.7;
+  S.timeLeft = S.cfg.duration;
+  S.stats = { served:0, lost:0, burnt:0, wasted:0, perfect:0,
+              revenue:0, tips:0, cost:0, items:{} };
+  S.phase = 'running';
+  tkEls = {};
+  renderRun();
+  if(!raf){ lastT = 0; raf = requestAnimationFrame(loop); }
+}
+
+function renderRun(){
+  app.innerHTML =
+  '<div class="hud">' +
+    '<span class="it">第<b>' + S.day + '</b>/' + (ECON.days||5) + ' 天</span>' +
+    '<span class="it">现金<b id="hCash">' + yen(S.cash) + '</b></span>' +
+    '<span class="it">已服务<b id="hServed">0</b></span>' +
+    '<span class="it" id="hTimeBox">剩余<b id="hTime">' + Math.round(S.cfg.duration/1000) + '</b>s</span>' +
+  '</div>' +
+  '<div class="panel" id="railPanel"><h3>订 单 架</h3><div class="rail" id="rail"></div></div>' +
+  '<div class="tabs" id="tabs"></div>' +
+  '<div class="panel" id="bench"></div>' +
+  '<div class="panel" id="shelfPanel"><h3>出 餐 架</h3><div class="shelf" id="shelf"></div></div>';
+  renderTabs();
+  renderBench();
+  bindStatic();
+}
+
+/* ── 工位 tab ── */
+function renderTabs(){
+  var t = el('tabs'); if(!t) return;
+  var defs = [
+    { k:'fries',    label:'薯条站', icon:friesSVG(19,'#B0824A') },
+    { k:'drink',    label:'饮料站', icon:cupSVG(19) },
+    { k:'assembly', label:'组装站', icon:burgerSVG(19) }
+  ];
+  t.innerHTML = defs.map(function(d){
+    var n = pendingOfStation(d.k);
+    return '<button class="tab' + (S.tab === d.k ? ' on' : '') + '" data-tab="' + d.k + '">' +
+      d.icon + '<span>' + d.label + '</span>' +
+      '<i class="badge" id="bd-' + d.k + '"' + (n > 0 ? '' : ' style="display:none"') + '>' + n + '</i>' +
+    '</button>';
+  }).join('');
+}
+function pendingOfStation(station){
+  var need = 0;
+  S.orders.forEach(function(o){
+    o.want.forEach(function(w){
+      if(DISH[w.code] && DISH[w.code].station === station) need++;
+    });
+  });
+  var have = 0;
+  S.shelf.forEach(function(x){
+    if(DISH[x.code] && DISH[x.code].station === station) have++;
+  });
+  return Math.max(0, need - have);
+}
+function paintBadges(){
+  ['fries','drink','assembly'].forEach(function(k){
+    var node = el('bd-' + k);
+    if(!node) return;
+    var n = pendingOfStation(k);
+    if(n > 0){ node.style.display = ''; if(node.textContent !== String(n)) node.textContent = n; }
+    else node.style.display = 'none';
+  });
+}
+
+/* ── 工位区 ── */
+var picked = { fries: null, drink: null };
+
+function renderBench(){
+  var b = el('bench'); if(!b) return;
+  if(S.tab === 'fries')      renderFries(b);
+  else if(S.tab === 'drink') renderDrink(b);
+  else                       renderAssembly(b);
+}
+
+/* ── 薯条站 ── */
+function renderFries(b){
+  var list = dishesOf('fries');
+  if(!picked.fries && list.length) picked.fries = list[0];
+  b.innerHTML =
+    '<h3>油 锅 · 选 品 下 料</h3>' +
+    '<div class="picker" id="pick-fries">' +
+      list.map(function(k){
+        var d = DISH[k];
+        return '<button class="pk' + (picked.fries === k ? ' on' : '') + '" data-pick="' + k + '">' +
+          dishIcon(k, 18) + '<span>' + esc(d.short || d.name) + '</span>' +
+          '<span class="pr">' + yen(d.price) + '</span></button>';
+      }).join('') +
+    '</div>' +
+    '<div class="slots" id="slots"></div>' +
+    '<div class="legend" style="margin-top:2px">' +
+      '<span><i class="dot" style="background:var(--raw)"></i>生</span>' +
+      '<span><i class="dot" style="background:var(--yellow)"></i>炸制中</span>' +
+      '<span><i class="dot" style="background:#3E8E42"></i>可捞</span>' +
+      '<span><i class="dot" style="background:var(--burnt)"></i>焦</span>' +
+    '</div>';
+
+  var box = el('slots');
+  for(var i = 0; i < FRYER.slots; i++){
+    var d = document.createElement('div');
+    d.className = 'slot idle';
+    d.setAttribute('data-slot', String(i));
+    d.innerHTML =
+      '<div class="slotnm"></div><div class="slotbig"></div>' +
+      '<div class="frywrap"><i class="stick" style="height:68px"></i><i class="stick" style="height:92px"></i><i class="stick" style="height:80px"></i><i class="stick" style="height:96px"></i><i class="stick" style="height:72px"></i></div>' +
+      '<div class="lbl">空</div>' +
+      '<div class="bar"><i class="zone" style="left:' + (FRYER.rawUntil*100) + '%;width:' + ((1-FRYER.rawUntil)*100) + '%"></i><i class="fill"></i></div>' +
+      '<div class="lbl2">从上面选品</div>';
+    box.appendChild(d);
+  }
+}
+/* ── 饮料站 ── */
+function renderDrink(b){
+  var list = dishesOf('drink');
+  if(!picked.drink && list.length) picked.drink = list[0];
+  var cur = DISH[picked.drink] || {};
+  b.innerHTML =
+    '<h3>饮 料 机 · 选 品 注 杯</h3>' +
+    '<div class="picker" id="pick-drink">' +
+      list.map(function(k){
+        var d = DISH[k];
+        return '<button class="pk' + (picked.drink === k ? ' on' : '') + '" data-pick="' + k + '">' +
+          dishIcon(k, 18) + '<span>' + esc(d.short || d.name) + '</span>' +
+          '<span class="pr">' + yen(d.price) + '</span></button>';
+      }).join('') +
+    '</div>' +
+    '<div class="drinkwrap">' +
+      '<div class="machine">' +
+        '<div class="machine-top">饮 料 机</div>' +
+        '<div class="cupshell">' +
+          '<div class="nozzle"></div>' +
+          '<div class="cup">' +
+            '<div class="goal" style="bottom:' + (DRINK.low*100) + '%;height:' + ((DRINK.high-DRINK.low)*100) + '%"></div>' +
+            '<div class="liquid" id="cupFill" style="background:' + (CUP_COLOR[picked.drink] || '#3D2416') + '"></div>' +
+          '</div>' +
+          '<div class="cup-mark" id="cupMark">目标线</div>' +
+        '</div>' +
+        '<div class="drip"></div>' +
+      '</div>' +
+      '<div class="tap" id="tap">按住注杯 <b>绿区松手 · ' + esc(cur.short || '') + '</b></div>' +
+    '</div>';
+  bindDrink();
+}
+
+/* ── 组装站 ── */
+function activeBuildTicket(){
+  // 找最老的一张还没被出餐架满足的汉堡需求
+  for(var i = 0; i < S.orders.length; i++){
+    var o = S.orders[i];
+    for(var j = 0; j < o.want.length; j++){
+      var w = o.want[j], d = DISH[w.code];
+      if(!d || d.station !== 'assembly') continue;
+      var need = sig(w.toppings);
+      var hit = false;
+      for(var k = 0; k < S.shelf.length; k++){
+        if(S.shelf[k].code === w.code && S.shelf[k].sig === need){ hit = true; break; }
+      }
+      if(!hit) return { order: o, idx: j, code: w.code, toppings: w.toppings || [] };
+    }
+  }
+  return null;
+}
+function renderAssembly(b){
+  var t = activeBuildTicket();
+  if(!t){
+    var menuCards = dishesOf('assembly').map(function(k){
+      var dd = DISH[k];
+      return '<div class="bv">' +
+        '<div class="bv-ic">' + dishIcon(k, 26) + '</div>' +
+        '<div class="bv-nm">' + esc(dd.short) + '</div>' +
+        '<div class="bv-pr">' + yen(dd.price) + ' · ' + (dd.recipe || []).length + ' 样配料</div>' +
+        '<div class="bv-tp">' + esc((dd.recipe || []).join(' · ') || '不用加料') + '</div>' +
+      '</div>';
+    }).join('');
+    b.innerHTML = '<h3>组 装 台</h3>' +
+      '<div class="asm-void">' +
+        '<div class="idle-note">眼下没有要组装的堡，先去薯条站或饮料站 —— <b>等单的时候可以把配方背一下</b></div>' +
+        '<div class="bv-grid">' + menuCards + '</div>' +
+      '</div>';
+    return;
+  }
+  // 票号变化 → 重置当前制作
+  if(!S.build || S.build.key !== (t.order.id + ':' + t.idx)){
+    S.build = { key: t.order.id + ':' + t.idx, code: t.code, added: [], errors: 0, shake: null };
+  }
+  var bd = S.build, d = DISH[t.code], need = t.toppings;
+  var allIngr = [];
+  need.forEach(function(n){ if(allIngr.indexOf(n) < 0) allIngr.push(n); });
+
+  b.innerHTML =
+  '<h3>组 装 台</h3>' +
+  '<div class="asm">' +
+    '<div class="asm-left">' +
+      '<div class="asm-tag">#' + t.order.no + ' · ' + esc(d.short) + '</div>' +
+      '<div class="stack">' +
+        '<div class="bun"></div>' +
+        bd.added.map(function(n){
+          var st = toppingStyle(n);
+          return '<div class="layer s-' + st.s + '" style="background:' + st.c + '"></div>';
+        }).join('') +
+        need.slice(bd.added.length).map(function(n){
+          // 还没加的层用虚线占位，让"要搭多高"一眼可见，也把左边这块空地填满
+          var st = toppingStyle(n);
+          return '<div class="layer ghost s-' + st.s + '" style="border-color:' + st.c + ';opacity:.45"></div>';
+        }).join('') +
+        (need.length ? '<div class="bun top"></div>' : '') +
+      '</div>' +
+      '<div class="asm-cnt">已加 ' + bd.added.length + ' / ' + need.length + ' 层</div>' +
+    '</div>' +
+    '<div class="asm-right">' +
+      '<div class="asm-ticket">' +
+        '<div class="ttl">' + burgerSVG(17) + esc(d.name) + '</div>' +
+        '<div class="sub2">' + (need.length ? '照着单子从上往下加' : '这单不用加料，直接合上出餐') + '</div>' +
+        '<div class="need">' +
+          need.map(function(n, i){
+            var cls = i < bd.added.length ? 'done' : (i === bd.added.length ? 'next' : '');
+            return '<span class="' + cls + '"><i>' + (i + 1) + '</i>' + esc(n) + '</span>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="asm-pal">' +
+        '<div class="pal-ttl">配 料 台 · 点下一个该加的</div>' +
+        '<div class="ingr">' +
+          allIngr.map(function(n){
+            return '<button class="ig" data-ig="' + esc(n) + '">' + toppingSVG(n, 16) + esc(n) + '</button>';
+          }).join('') +
+          '<button class="ig fin" id="fin"' + (bd.added.length < need.length ? ' disabled' : '') + '>' +
+            '合上出餐' + (need.length ? '（' + bd.added.length + '/' + need.length + '）' : '') +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+/* ════════════════ 绑定 ════════════════ */
+function bindStatic(){
+  el('tabs').addEventListener('click', function(e){
+    var b = e.target.closest('[data-tab]'); if(!b) return;
+    var k = b.getAttribute('data-tab');
+    if(k === S.tab) return;
+    if(S.cup.pouring){ S.cup.pouring = false; finishPour(); }
+    S.tab = k; sfxClick();
+    renderTabs(); renderBench(); paint();
+  });
+
+  var bench = el('bench');
+  bench.addEventListener('click', function(e){
+    var pk = e.target.closest('[data-pick]');
+    if(pk){
+      var k = pk.getAttribute('data-pick');
+      var station = DISH[k] ? DISH[k].station : null;
+      if(station){
+        // 只更新选中态。绝不能用 renderBench() 重建工位——
+        // 那会把正在计时的油槽/正在注的杯全销毁重建，玩家刚点下去的操作直接失效
+        picked[station] = k;
+        [].forEach.call(bench.querySelectorAll('#pick-' + station + ' .pk'), function(n){
+          n.classList.toggle('on', n.getAttribute('data-pick') === k);
+        });
+        if(station === 'drink'){
+          var fill = el('cupFill');
+          if(fill) fill.style.background = CUP_COLOR[k] || '#3D2416';
+          if(!S.cup.pouring){
+            var tap = el('tap');
+            if(tap) tap.innerHTML = '按住注杯 <b>绿区松手 · ' + esc((DISH[k] && DISH[k].short) || '') + '</b>';
+          }
+        }
+        sfxClick();
+      }
+      return;
+    }
+    var slot = e.target.closest('[data-slot]');
+    if(slot){ clickSlot(+slot.getAttribute('data-slot')); return; }
+    var ig = e.target.closest('[data-ig]');
+    if(ig){ addIngredient(ig.getAttribute('data-ig'), ig); return; }
+    if(e.target.closest('#fin')){ finishBurger(); return; }
+  });
+
+  el('shelf').addEventListener('click', function(e){
+    var c = e.target.closest('[data-sh]'); if(!c) return;
+    var i = +c.getAttribute('data-sh');
+    if(!S.shelf[i]) return;
+    S.shelf.splice(i, 1); S.stats.wasted++;
+    sfxBad();
+    popText(e.clientX, e.clientY, '丢掉了', COL.red);
+    renderShelf(); paint();
+    if(S.tab === 'assembly') renderBench();
+  });
+
+  el('rail').addEventListener('click', function(e){
+    var b = e.target.closest('[data-go]'); if(!b) return;
+    e.stopPropagation();
+    serve(+b.getAttribute('data-go'), e.clientX, e.clientY);
+  });
+}
+function bindDrink(){
+  var tap = el('tap'); if(!tap) return;
+  tap.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    if(S.cup.pouring) return;
+    var code = picked.drink; var d = DISH[code];
+    if(!d) return;
+    if(S.cash < d.cost){ toast('现金不够进货了'); sfxBad(); return; }
+    S.cash -= d.cost; S.stats.cost += d.cost;
+    S.cup.pouring = true; S.cup.fill = 0; S.cup.code = code;
+    tap.classList.add('on');
+  });
+}
+
+/* ── 油锅 ── */
+function fireFryer(code){
+  var d = DISH[code];
+  if(!d) return;
+  var idx = -1;
+  for(var i = 0; i < S.slots.length; i++) if(S.slots[i].st === 'idle'){ idx = i; break; }
+  if(idx < 0){ toast('三个锅都在忙'); sfxBad(); return; }
+  if(S.cash < d.cost){ toast('现金不够进货了'); sfxBad(); return; }
+  S.cash -= d.cost; S.stats.cost += d.cost;
+  S.slots[idx].st = 'frying';
+  S.slots[idx].t = 0;
+  S.slots[idx].code = code;
+  sfxClick(); paint();
+}
+function clickSlot(i){
+  var s = S.slots[i]; if(!s) return;
+  if(s.st === 'idle'){ if(picked.fries) fireFryer(picked.fries); return; }
+  if(s.st === 'frying'){
+    var r = s.t / FRYER.ms;
+    if(r < FRYER.rawUntil){
+      s.st = 'idle'; s.t = 0; s.code = null;
+      S.stats.wasted++; sfxBad(); toast('还没炸透，扔了');
+      paint(); return;
+    }
+    var q = qualityFries(r), code = s.code;
+    s.st = 'idle'; s.t = 0; s.code = null;
+    putOnShelf(code, q, null);
+    sfxGood(); paint();
+    return;
+  }
+  if(s.st === 'burnt'){
+    s.st = 'idle'; s.t = 0; s.code = null;
+    S.stats.burnt++; sfxBad();
+    paint(); return;
+  }
+}
+function qualityFries(ratio){
+  var lo = FRYER.rawUntil, mid = (lo + 1) / 2;
+  return clamp(1 - Math.abs(ratio - mid) / (mid - lo) * 0.7, 0.1, 1);
+}
+
+/* ── 饮料 ── */
+function finishPour(){
+  var cup = el('cupFill'), tap = el('tap');
+  if(cup) cup.style.height = '0px';
+  if(tap){ tap.className = 'tap'; tap.removeAttribute('data-m'); }
+  var f = S.cup.fill, code = S.cup.code;
+  S.cup.fill = 0; S.cup.code = null;
+  if(f < DRINK.low){ if(f > 0.04){ S.stats.wasted++; sfxBad(); toast('没打满，倒了'); } return; }
+  if(f > DRINK.high){ S.stats.wasted++; sfxBad(); toast('溢出来了'); return; }
+  var lo = DRINK.low, hi = DRINK.high, mid = (lo + hi) / 2;
+  var q = clamp(1 - Math.abs(f - mid) / (mid - lo) * 0.7, 0.1, 1);
+  if(code) putOnShelf(code, q, null);
+  sfxGood();
+}
+
+/* ── 组装 ── */
+function addIngredient(name, node){
+  if(!S.build) return;
+  var t = activeBuildTicket();
+  if(!t || S.build.key !== (t.order.id + ':' + t.idx)) return;
+  var need = t.toppings;
+  if(S.build.added.length >= need.length){ toast('配料齐了，合上吧'); return; }
+  if(name === need[S.build.added.length]){
+    S.build.added.push(name);
+    sfxClick();
+    renderBench();
+    var n = el('fin');
+    if(S.build.added.length === need.length && n) n.disabled = false;
+  } else {
+    S.build.errors++;
+    sfxBad();
+    toast('顺序不对，单子上写着呢');
+    if(node){ node.classList.add('shake'); setTimeout(function(){ node.classList.remove('shake'); }, 320); }
+    if(S.build.errors >= 3){
+      S.stats.wasted++;
+      toast('这堡废了，重新来');
+      S.build = null;
+      renderBench();
+    }
+  }
+}
+function finishBurger(){
+  var t = activeBuildTicket();
+  if(!t || !S.build) return;
+  var need = t.toppings;
+  if(S.build.added.length < need.length){ toast('还差配料'); sfxBad(); return; }
+  var q = clamp(1 - S.build.errors * 0.34, 0.1, 1);
+  var code = t.code, tp = need.slice();
+  S.build = null;
+  putOnShelf(code, q, tp);
+  sfxGood();
+  renderBench();
+}
+
+/* ── 出餐架 ── */
+function putOnShelf(code, q, toppings){
+  if(S.shelf.length >= SHELF_CAP){
+    S.stats.wasted++;
+    toast('出餐架满了，这份扔了');
+    sfxBad();
+    return;
+  }
+  S.shelf.push({ code: code, q: q, sig: sig(toppings), toppings: toppings || null });
+  renderShelf(); paint();
+  if(S.tab === 'assembly') renderBench();
+}
+function renderShelf(){
+  var sh = el('shelf'); if(!sh) return;
+  var h = '';
+  for(var i = 0; i < SHELF_CAP; i++){
+    var it = S.shelf[i];
+    h += '<div class="sh' + (it ? ' has' : '') + '"' + (it ? ' data-sh="' + i + '"' : '') + '>' +
+      (it ? dishIcon(it.code, 22) : '') +
+      (it ? '<span class="q">' + Math.round(it.q * 100) + '</span>' : '') + '</div>';
+  }
+  h += '<span class="shelf-note">' + S.shelf.length + '/' + SHELF_CAP + '　点一下丢掉</span>';
+  sh.innerHTML = h;
+}
+
+/* ── 订单匹配 ── */
+function matchOrder(o){
+  var pool = S.shelf.slice();
+  return o.want.map(function(w){
+    var i = -1;
+    for(var k = 0; k < pool.length; k++){
+      if(pool[k].code === w.code && pool[k].sig === sig(w.toppings)){ i = k; break; }
+    }
+    if(i >= 0){ var it = pool.splice(i, 1)[0]; return { ok: true, code: w.code, q: it.q }; }
+    return { ok: false, code: w.code };
+  });
+}
+function missText(m){
+  var cnt = {};
+  m.forEach(function(x){ if(!x.ok) cnt[x.code] = (cnt[x.code] || 0) + 1; });
+  var parts = Object.keys(cnt).map(function(k){
+    return cnt[k] + ' ' + ((DISH[k] && (DISH[k].short || DISH[k].name)) || k);
+  });
+  return parts.length ? ('缺 ' + parts.join(' ')) : '出餐';
+}
+
+/* ── 订单栏 ── */
+function orderItemsHTML(o){
+  return o.want.map(function(w){
+    var d = DISH[w.code] || { name: w.code, short: w.code };
+    var tp = w.toppings && w.toppings.length ? w.toppings.join('·') : '';
+    return '<div class="li miss" data-w="' + w.code + '">' +
+      dishIcon(w.code, 17) +
+      '<span class="nm">' + esc(d.short || d.name) + '</span>' +
+      (tp ? '<span class="tp">' + esc(tp) + '</span>' : '') +
+    '</div>';
+  }).join('');
+}
+function syncOrders(){
+  var rail = el('rail'); if(!rail) return;
+  var seen = {};
+  S.orders.forEach(function(o){
+    seen[o.id] = 1;
+    var e = tkEls[o.id];
+    if(!e){
+      e = document.createElement('div');
+      e.className = 'tk';
+      e.setAttribute('data-tk', String(o.id));
+      e.innerHTML =
+        '<div class="tk-head">' +
+          '<span class="tk-face">' + bodySVG(o.hue, 22) + '</span>' +
+          '<span class="tk-no">#' + o.no + '</span>' +
+          '<span class="tk-time">--</span>' +
+        '</div>' +
+        '<div class="tk-items">' + orderItemsHTML(o) + '</div>' +
+        '<div class="tk-pat"><i></i></div>' +
+        '<button class="tk-go" data-go="' + o.id + '" disabled>缺</button>';
+      e._lis  = [].slice.call(e.querySelectorAll('.li'));
+      e._pat  = e.querySelector('.tk-pat i');
+      e._time = e.querySelector('.tk-time');
+      e._go   = e.querySelector('.tk-go');
+      tkEls[o.id] = e;
+      rail.appendChild(e);
+    }
+  });
+  Object.keys(tkEls).forEach(function(id){
+    if(!seen[id]){
+      var e = tkEls[id];
+      e.classList.add('going');
+      (function(node){ setTimeout(function(){ if(node.parentNode) node.remove(); }, 300); })(e);
+      delete tkEls[id];
+    }
+  });
+  var none = rail.querySelector('.none');
+  if(!S.orders.length && !none){
+    var d = document.createElement('div');
+    d.className = 'none'; d.textContent = '还没来客人…';
+    rail.appendChild(d);
+  } else if(S.orders.length && none) none.remove();
+}
+
+/* ── 出餐 ── */
+function serve(id, x, y){
+  var idx = -1;
+  for(var i = 0; i < S.orders.length; i++) if(S.orders[i].id === id) idx = i;
+  if(idx < 0) return;
+  var o = S.orders[idx];
+  var m = matchOrder(o);
+  if(!m.every(function(x){ return x.ok; })){
+    toast('还差：' + missText(m).replace('缺 ', ''));
+    sfxBad(); return;
+  }
+  // 逐件从出餐架扣除（matchOrder 用的是副本，这里真扣）
+  var qSum = 0;
+  o.want.forEach(function(w){
+    for(var k = 0; k < S.shelf.length; k++){
+      if(S.shelf[k].code === w.code && S.shelf[k].sig === sig(w.toppings)){
+        qSum += S.shelf[k].q; S.shelf.splice(k, 1); break;
+      }
+    }
+  });
+  var avgQ = qSum / o.want.length;
+  var base = o.want.reduce(function(a, w){ return a + ((DISH[w.code] && DISH[w.code].price) || 0); }, 0);
+  var tipRate = avgQ >= PERFECT_Q ? TIP_PERFECT : avgQ >= GOOD_Q ? TIP_GOOD : 0;
+  var tip = Math.round(base * tipRate);
+  var money = base + tip;
+
+  S.cash += money;
+  S.stats.revenue += base;
+  S.stats.tips += tip;
+  S.stats.served++;
+  if(avgQ >= PERFECT_Q) S.stats.perfect++;
+  o.want.forEach(function(w){ S.stats.items[w.code] = (S.stats.items[w.code] || 0) + 1; });
+
+  renderShelf(); sfxCash();
+  if(tip > 0) popText(x, y - 14, '+' + tip + ' 小费', COL.yellowD);
+  popText(x, y, '+' + yen(money), COL.green);
+
+  var e = tkEls[o.id];
+  if(e){
+    e.classList.add('going');
+    setTimeout(function(){ if(e.parentNode) e.remove(); }, 300);
+    delete tkEls[o.id];
+  }
+  S.orders.splice(idx, 1);
+  renderTabs();
+  syncOrders();           // 同步清理：拖到 setTimeout 会留下可点的幽灵卡
+  if(S.tab === 'assembly') renderBench();
+}
+
+/* ── 主循环 ── */
+function loop(now){
+  raf = requestAnimationFrame(loop);
+  if(!lastT) lastT = now;
+  var dt = Math.min(90, now - lastT);
+  lastT = now;
+  if(S && S.phase === 'running'){ update(dt); paint(); }
+}
+function update(dt){
+  S.timeLeft -= dt;
+  if(S.timeLeft <= 0){ endDay(); return; }
+
+  for(var i = 0; i < S.slots.length; i++){
+    var s = S.slots[i];
+    if(s.st === 'frying'){
+      s.t += dt;
+      if(s.t >= FRYER.ms){ s.st = 'burnt'; s.t = FRYER.ms; }
+    }
+  }
+  if(S.cup.pouring){
+    S.cup.fill += dt / DRINK.ms;
+    if(S.cup.fill >= 1){ S.cup.fill = 1; S.cup.pouring = false; finishPour(); }
+  }
+
+  S.spawnAcc += dt;
+  while(S.spawnAcc >= S.cfg.interval){
+    S.spawnAcc -= S.cfg.interval;
+    if(S.orders.length < MAX_ORDERS) spawnOrder();
+  }
+
+  var gone = [];
+  for(var j = 0; j < S.orders.length; j++){
+    S.orders[j].patience -= dt;
+    if(S.orders[j].patience <= 0) gone.push(S.orders[j].id);
+  }
+  if(gone.length){
+    gone.forEach(function(id){
+      var ix = -1;
+      for(var m = 0; m < S.orders.length; m++) if(S.orders[m].id === id) ix = m;
+      if(ix >= 0) S.orders.splice(ix, 1);
+      S.stats.lost++; sfxBad();
+    });
+    renderTabs(); syncOrders();
+    if(S.tab === 'assembly') renderBench();
+  }
+}
+function spawnOrder(){
+  S.orders.push({
+    id: uid, no: uid++,
+    want: makeOrderWant(S.day),
+    patience: S.cfg.patience, max: S.cfg.patience,
+    hue: (Math.random() * 360) | 0
+  });
+  renderTabs(); syncOrders();
+  if(S.tab === 'assembly') renderBench();
+}
+
+/* ════════════════ 每帧刷新 ════════════════ */
+function paint(){
+  if(!S || S.phase !== 'running') return;
+  var t = el('hTime'); if(!t) return;
+  t.textContent = Math.max(0, Math.ceil(S.timeLeft / 1000));
+  var tb = el('hTimeBox');
+  if(tb) tb.className = 'it' + (S.timeLeft < 10000 ? ' warn' : '');
+  var hc = el('hCash'); if(hc) hc.textContent = yen(S.cash);
+  var hs = el('hServed'); if(hs) hs.textContent = S.stats.served;
+
+  S.orders.forEach(function(o){
+    var e = tkEls[o.id]; if(!e) return;
+    var m = matchOrder(o);
+    for(var i = 0; i < m.length; i++){
+      var node = e._lis[i];
+      if(!node) continue;
+      var cls = 'li ' + (m[i].ok ? 'ok' : 'miss');
+      if(node.className !== cls) node.className = cls;
+    }
+    var okAll = m.every(function(x){ return x.ok; });
+    if(okAll !== e._ready){
+      e._ready = okAll;
+      e.classList.toggle('ready', okAll);
+      e._go.disabled = !okAll;
+    }
+    var label = okAll ? '出餐' : missText(m);
+    if(e._go.textContent !== label) e._go.textContent = label;
+
+    var r = clamp(o.patience / o.max, 0, 1);
+    if(e._pat){
+      e._pat.style.width = (r * 100) + '%';
+      e._pat.style.background = r > 0.5 ? COL.greenL : r > 0.25 ? COL.amber : COL.red;
+    }
+    var sec = Math.ceil(o.patience / 1000);
+    if(e._time.textContent !== sec + 's') e._time.textContent = sec + 's';
+    var hot = r < 0.3;
+    if(hot !== e._hot){ e._hot = hot; e.classList.toggle('hot', hot); }
+  });
+
+  paintBadges();
+  if(S.tab === 'fries') paintFries();
+  else if(S.tab === 'drink') paintDrink();
+}
+
+function paintFries(){
+  for(var i = 0; i < S.slots.length; i++){
+    var s = S.slots[i];
+    var node = app.querySelector('[data-slot="' + i + '"]');
+    if(!node) continue;
+    var ratio = s.st === 'burnt' ? 1 : clamp(s.t / FRYER.ms, 0, 1);
+    var fill = node.querySelector('.fill');
+    if(fill) fill.style.width = (ratio * 100) + '%';
+
+    var col = COL.raw;
+    if(s.st === 'burnt') col = COL.burnt;
+    else if(s.st === 'frying' && ratio >= FRYER.rawUntil) col = COL.yellow;
+    var sticks = node.querySelectorAll('.stick');
+    for(var k = 0; k < sticks.length; k++) sticks[k].style.background = col;
+
+    var wrap = node.querySelector('.frywrap');
+    if(wrap) wrap.style.opacity = (s.st === 'idle') ? '0.26' : '1';
+
+    var lbl = node.querySelector('.lbl'), lbl2 = node.querySelector('.lbl2');
+    var snm = node.querySelector('.slotnm'), sbig = node.querySelector('.slotbig');
+    var cls = 'slot';
+    var nm = s.code && DISH[s.code] ? (DISH[s.code].short || '') : '';
+    if(snm) snm.textContent = (s.st === 'idle') ? '' : nm;
+    if(sbig){
+      sbig.textContent = s.st === 'idle' ? '点一下下料'
+        : s.st === 'burnt' ? '焦'
+        : ratio < FRYER.rawUntil ? ((FRYER.ms - s.t) / 1000).toFixed(1) + 's'
+        : '捞出';
+    }
+    if(s.st === 'idle'){ cls += ' idle'; if(lbl) lbl.textContent = '空'; if(lbl2) lbl2.textContent = '从上面选品'; }
+    else if(s.st === 'frying'){
+      if(ratio < FRYER.rawUntil){
+        cls += ' frying';
+        if(lbl) lbl.textContent = nm + ' ' + ((FRYER.ms - s.t)/1000).toFixed(1) + 's';
+        if(lbl2) lbl2.textContent = '再等等';
+      } else {
+        cls += ' ready';
+        if(lbl) lbl.textContent = '可以捞！';
+        if(lbl2) lbl2.textContent = nm + ' · 点一下出锅';
+      }
+    } else if(s.st === 'burnt'){
+      cls += ' burnt';
+      if(lbl) lbl.textContent = '焦了';
+      if(lbl2) lbl2.textContent = nm + ' · 点一下清锅';
+    }
+    if(node.className !== cls) node.className = cls;
+  }
+}
+
+function paintDrink(){
+  var cup = el('cupFill');
+  if(!cup) return;
+  var cupEl = cup.parentNode;
+  // 用 px 而不是 %：绝对定位元素的百分比高度依赖包含块高度，实测在 flex 里
+  // 会被算成 0（inline 写着 36%，computed 一直是 0px，液面永远不显示）。px 没有这个坑。
+  var ch0 = cupEl ? cupEl.clientHeight : 0;
+  cup.style.height = Math.round(clamp(S.cup.fill, 0, 1) * ch0) + 'px';
+  var mark = el('cupMark');
+  if(mark && cupEl){
+    var ch = cupEl.offsetHeight;
+    if(ch && mark._h !== ch){
+      mark._h = ch;
+      mark.style.bottom = Math.round((DRINK.low + DRINK.high) / 2 * ch) + 'px';
+    }
+  }
+  var tap = el('tap');
+  if(!tap) return;
+  var mode = !S.cup.pouring ? 'idle'
+           : (S.cup.fill >= DRINK.low && S.cup.fill <= DRINK.high ? 'ready' : 'on');
+  if(tap.getAttribute('data-m') !== mode){
+    // 用 data-m 记状态，而不是看 className：
+    // finishPour() 会直接把 className 重置回 'tap'，靠 class 比对会漏掉这一帧，文字就永远停在上一次
+    tap.setAttribute('data-m', mode);
+    tap.className = 'tap' + (mode === 'idle' ? '' : ' ' + mode);
+    var d = DISH[picked.drink] || {};
+    tap.innerHTML =
+      mode === 'ready' ? '松手！<b>刚好</b>' :
+      mode === 'on'    ? '注杯中…<b id="pourPct">' + Math.round(S.cup.fill * 100) + '%</b>' :
+                         '按住注杯 <b>绿区松手 · ' + esc(d.short || '') + '</b>';
+  } else if(mode === 'on'){
+    var pct = el('pourPct');
+    if(pct) pct.textContent = Math.round(S.cup.fill * 100) + '%';
+  }
+}
+
+/* ════════════════ 打烊 ════════════════ */
+function endDay(){
+  S.phase = 'dayend';
+  var st = S.stats;
+  var rent = ECON.rent || 40;
+  var profit = st.revenue + st.tips - st.cost - rent;
+  S.cash -= rent;
+  S.history.push({ day:S.day, revenue:st.revenue, tips:st.tips, cost:st.cost,
+                   rent:rent, profit:profit, cash:S.cash,
+                   served:st.served, lost:st.lost });
+  if(S.cash < 0) return renderBankrupt();
+  renderDayEnd(profit, rent);
+}
+
+function renderDayEnd(profit, rent){
+  var st = S.stats;
+  var sold = Object.keys(st.items).reduce(function(a,k){ return a + st.items[k]; }, 0);
+  var items = Object.keys(st.items).map(function(k){
+    var d = DISH[k]; return ((d && (d.short || d.name)) || k) + ' ×' + st.items[k];
+  }).join('　') || '一件都没卖出去';
+  var traffic = st.served + st.lost;
+  var rate = traffic ? Math.round(st.served / traffic * 100) : 0;
+
+  app.innerHTML =
+  '<div class="sheet">' +
+    '<div><h1>第 ' + S.day + ' 天 · 打烊</h1><p class="sub" style="margin-top:6px">' + esc(items) + '</p></div>' +
+    '<div class="card">' +
+      '<div class="row"><span class="k">接待顾客</span><span class="v">' + st.served + ' / ' + traffic + ' 位</span></div>' +
+      '<div class="row"><span class="k">服务率</span><span class="v ' + (rate >= 80 ? 'pos' : rate < 60 ? 'neg' : '') + '">' + rate + '%</span></div>' +
+      '<div class="row"><span class="k">卖出</span><span class="v">' + sold + ' 件</span></div>' +
+      '<div class="row"><span class="k">完美出品</span><span class="v ' + (st.perfect ? 'pos' : '') + '">' + st.perfect + ' 单</span></div>' +
+      '<div class="row"><span class="k">跑掉的顾客</span><span class="v ' + (st.lost ? 'neg' : '') + '">' + st.lost + ' 位</span></div>' +
+      '<div class="row"><span class="k">炸糊 / 倒掉</span><span class="v ' + ((Number(st.burnt) + Number(st.wasted)) ? 'neg' : '') + '">' + (Number(st.burnt) + Number(st.wasted)) + ' 份</span></div>' +
+      '<div class="row"><span class="k">营业收入</span><span class="v pos">' + yen(st.revenue) + '</span></div>' +
+      (st.tips ? '<div class="row"><span class="k">小费</span><span class="v pos">' + yen(st.tips) + '</span></div>' : '') +
+      '<div class="row"><span class="k">原料成本</span><span class="v neg">' + signedYen(-st.cost) + '</span></div>' +
+      '<div class="row"><span class="k">房租</span><span class="v neg">' + signedYen(-rent) + '</span></div>' +
+      '<div class="row big"><span class="k">今日净利</span><span class="v ' + (profit >= 0 ? 'pos' : 'neg') + '">' + signedYen(profit) + '</span></div>' +
+      '<div class="row"><span class="k">现金余额</span><span class="v">' + yen(S.cash) + '</span></div>' +
+    '</div>' +
+    '<button class="btn" id="nx" style="min-width:200px">' +
+      (S.day >= (ECON.days||5) ? '看总账' : '进入第 ' + (S.day + 1) + ' 天') +
+    '</button>' +
+  '</div>';
+
+  el('nx').addEventListener('click', function(){
+    if(S.day >= (ECON.days||5)){ renderOver(); return; }
+    S.day++; startDay();
+  });
+}
+
+function renderBankrupt(){
+  app.innerHTML =
+  '<div class="sheet">' +
+    '<div><h1 style="color:var(--red)">破产了</h1>' +
+    '<p class="sub" style="margin-top:8px">第 ' + S.day + ' 天收摊，账上见底。<br>下手再稳一点，别把料做废了。</p></div>' +
+    '<button class="btn" id="rs" style="min-width:200px">从头再来</button>' +
+  '</div>';
+  el('rs').addEventListener('click', function(){ S = newState(); renderTitle(); });
+}
+
+function renderOver(){
+  var total = S.history.reduce(function(a,h){ return a + h.profit; }, 0);
+  var served = S.history.reduce(function(a,h){ return a + h.served; }, 0);
+  var lost = S.history.reduce(function(a,h){ return a + h.lost; }, 0);
+  var cash = S.cash, base = ECON.startCash || 1200, target = ECON.targetCash || base * 1.35;
+  var g, note;
+  if(cash >= target)                  { g='S'; note='这店你开出了名堂。'; }
+  else if(cash >= base * 1.22)        { g='A'; note='稳，火候拿得住。'; }
+  else if(cash >= base * 1.06)        { g='B'; note='小赚，路子对了。'; }
+  else if(cash >= base * 0.90)        { g='C'; note='白忙一场，好歹没亏。'; }
+  else                                { g='D'; note='钱少了，手艺还得练。'; }
+  var best = S.history.slice().sort(function(a,b){ return b.profit - a.profit; })[0];
+
+  app.innerHTML =
+  '<div class="sheet">' +
+    '<div class="grade">' + g + '</div>' +
+    '<p class="sub">' + note + '</p>' +
+    '<div class="card">' +
+      '<div class="row"><span class="k">经营天数</span><span class="v">' + S.history.length + ' 天</span></div>' +
+      '<div class="row"><span class="k">累计净利</span><span class="v ' + (total >= 0 ? 'pos' : 'neg') + '">' + signedYen(total) + '</span></div>' +
+      '<div class="row"><span class="k">共接待</span><span class="v">' + served + ' 位 · 跑掉 ' + lost + ' 位</span></div>' +
+      '<div class="row"><span class="k">最好的一天</span><span class="v">第 ' + (best ? best.day : 1) + ' 天 · ' + (best ? signedYen(best.profit) : '—') + '</span></div>' +
+      '<div class="row big"><span class="k">最终现金</span><span class="v">' + yen(cash) + '</span></div>' +
+    '</div>' +
+    '<button class="btn" id="rs" style="min-width:200px">再开一局</button>' +
+  '</div>';
+  el('rs').addEventListener('click', function(){ S = newState(); renderTitle(); });
+}
+
+/* ════════════════ 启动 ════════════════ */
+S = newState();
+renderTitle();
+
+/* 全局只绑一次：松手即结束注液 */
+window.addEventListener('pointerup', function(){
+  if(S && S.cup.pouring){ S.cup.pouring = false; finishPour(); }
+});
+window.addEventListener('pointerdown', function once(){
+  window.removeEventListener('pointerdown', once);
+  if(!AC){ try{ AC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
+  if(AC && AC.state === 'suspended') AC.resume();
+}, { once: true });
+
+})();
+</script>
+</body>
+</html>

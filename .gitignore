@@ -1,0 +1,22 @@
+# 依赖与锁文件
+node_modules/
+package-lock.json
+
+# 绝对不要提交的东西：真实 Token
+tools/.mcd-token
+.mcd-token
+mcp.json
+*.local.json
+.env
+.env.*
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+
+# 临时产物
+tmp/
+*.log
+
+# 本地 agent 工作记录，不进公开仓库
+.workbuddy/

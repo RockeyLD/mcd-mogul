@@ -1,0 +1,12 @@
+{
+  "_说明": "这是脱敏样例。把 YOUR_MCP_TOKEN 换成你自己的麦当劳 MCP Token，粘到 WorkBuddy 的【自定义连接器 → 配置 MCP】里保存并启用即可。仓库里任何地方都不要提交真实 Token。",
+  "mcpServers": {
+    "mcd-mcp": {
+      "type": "streamablehttp",
+      "url": "https://mcp.mcd.cn",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN"
+      }
+    }
+  }
+}

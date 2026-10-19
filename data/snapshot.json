@@ -1,0 +1,304 @@
+{
+  "meta": {
+    "source": "麦当劳 MCP（mcp.mcd.cn）",
+    "pulledAt": "2026-10-19 08:58:07",
+    "store": {
+      "storeCode": "1421136",
+      "storeName": "麦当劳深圳腾讯总部园区一店餐厅",
+      "address": "大铲湾南部企鹅岛4栋公寓地上一层"
+    },
+    "campaign": {
+      "date": "2026-10-19",
+      "title": "超值𝟗.𝟗元早餐两件套陪你开工啦😋",
+      "highlight": "9.9元超值早餐正式上新!"
+    }
+  },
+  "stations": [
+    {
+      "key": "fries",
+      "label": "薯条站",
+      "kind": "fryer",
+      "hint": "下锅 → 绿区捞出，过火就焦"
+    },
+    {
+      "key": "drink",
+      "label": "饮料站",
+      "kind": "pour",
+      "hint": "按住 → 绿区松手，满溢作废"
+    },
+    {
+      "key": "assembly",
+      "label": "组装站",
+      "kind": "assemble",
+      "hint": "照着单子依序加配料"
+    }
+  ],
+  "dishes": {
+    "1100": {
+      "code": "1100",
+      "name": "巨无霸",
+      "short": "巨无霸",
+      "price": 26,
+      "originalPrice": 26,
+      "cost": 9.1,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png",
+      "nutrition": {
+        "kcal": 513,
+        "protein": 27,
+        "fat": 26,
+        "carb": 42,
+        "sodium": 961
+      },
+      "recipe": [
+        "巨无霸酱",
+        "吉士",
+        "生菜",
+        "酸黄瓜",
+        "洋葱粒"
+      ]
+    },
+    "1120": {
+      "code": "1120",
+      "name": "双层吉士汉堡",
+      "short": "双层吉士汉堡",
+      "price": 23,
+      "originalPrice": 23,
+      "cost": 8,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png",
+      "nutrition": {
+        "kcal": 429,
+        "protein": 27,
+        "fat": 22,
+        "carb": 31,
+        "sodium": 1017
+      },
+      "recipe": [
+        "吉士",
+        "酸黄瓜",
+        "洋葱粒",
+        "番茄酱",
+        "芥末酱"
+      ]
+    },
+    "1401": {
+      "code": "1401",
+      "name": "麦乐鸡",
+      "short": "麦乐鸡",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png",
+      "nutrition": {
+        "kcal": 213,
+        "protein": 12,
+        "fat": 12,
+        "carb": 13,
+        "sodium": 422
+      },
+      "recipe": []
+    },
+    "1406": {
+      "code": "1406",
+      "name": "板烧鸡腿堡",
+      "short": "板烧鸡腿堡",
+      "price": 24,
+      "originalPrice": 24,
+      "cost": 8.4,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png",
+      "nutrition": {
+        "kcal": 391,
+        "protein": 23,
+        "fat": 17,
+        "carb": 35,
+        "sodium": 1041
+      },
+      "recipe": [
+        "烤味酱",
+        "切块生菜"
+      ]
+    },
+    "1440": {
+      "code": "1440",
+      "name": "麦辣鸡腿汉堡",
+      "short": "麦辣鸡腿汉堡",
+      "price": 23,
+      "originalPrice": 23,
+      "cost": 8,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png",
+      "nutrition": {
+        "kcal": 485,
+        "protein": 24,
+        "fat": 24,
+        "carb": 42,
+        "sodium": 1208
+      },
+      "recipe": [
+        "麦香鸡酱",
+        "切块生菜"
+      ]
+    },
+    "1450": {
+      "code": "1450",
+      "name": "麦香鸡",
+      "short": "麦香鸡",
+      "price": 17,
+      "originalPrice": 17,
+      "cost": 5.9,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png",
+      "nutrition": {
+        "kcal": 369,
+        "protein": 15,
+        "fat": 17,
+        "carb": 39,
+        "sodium": 731
+      },
+      "recipe": [
+        "麦香鸡酱",
+        "生菜"
+      ]
+    },
+    "1600": {
+      "code": "1600",
+      "name": "麦香鱼",
+      "short": "麦香鱼",
+      "price": 22.5,
+      "originalPrice": 22.5,
+      "cost": 7.9,
+      "station": "assembly",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png",
+      "nutrition": {
+        "kcal": 325,
+        "protein": 16,
+        "fat": 13,
+        "carb": 35,
+        "sodium": 556
+      },
+      "recipe": [
+        "麦香鱼酱",
+        "吉士"
+      ]
+    },
+    "1700": {
+      "code": "1700",
+      "name": "麦辣鸡翅",
+      "short": "麦辣鸡翅",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png",
+      "nutrition": {
+        "kcal": 224,
+        "protein": 13,
+        "fat": 15,
+        "carb": 9,
+        "sodium": 537
+      },
+      "recipe": []
+    },
+    "2430": {
+      "code": "2430",
+      "name": "【美汁源】“黄金橙橙”",
+      "short": "黄金橙橙",
+      "price": 13,
+      "originalPrice": 13,
+      "cost": 4.6,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20240904/product/MS_2430_320.png",
+      "nutrition": {
+        "kcal": 165,
+        "protein": 0,
+        "fat": 0,
+        "carb": 41,
+        "sodium": 53
+      },
+      "recipe": []
+    },
+    "3010": {
+      "code": "3010",
+      "name": "雪碧",
+      "short": "雪碧",
+      "price": 9.5,
+      "originalPrice": 9.5,
+      "cost": 3.3,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G3010_320.png",
+      "nutrition": {
+        "kcal": 105,
+        "protein": 0,
+        "fat": 0,
+        "carb": 26,
+        "sodium": 29
+      },
+      "recipe": []
+    },
+    "4810": {
+      "code": "4810",
+      "name": "薯条",
+      "short": "薯条",
+      "price": 14.5,
+      "originalPrice": 14.5,
+      "cost": 5.1,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1747877491921.png",
+      "nutrition": {
+        "kcal": 289,
+        "protein": 4,
+        "fat": 12,
+        "carb": 38,
+        "sodium": 165
+      },
+      "recipe": []
+    },
+    "514782": {
+      "code": "514782",
+      "name": "脆脆薯条",
+      "short": "脆脆薯条",
+      "price": 16,
+      "originalPrice": 16,
+      "cost": 5.6,
+      "station": "fries",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_514782_320_1747877523158.png",
+      "nutrition": {
+        "kcal": 279,
+        "protein": 4,
+        "fat": 14,
+        "carb": 32,
+        "sodium": 540
+      },
+      "recipe": []
+    },
+    "9900008751": {
+      "code": "9900008751",
+      "name": "可乐",
+      "short": "可乐",
+      "price": 9.5,
+      "originalPrice": 9.5,
+      "cost": 3.3,
+      "station": "drink",
+      "image": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.gif",
+      "nutrition": {
+        "kcal": 147,
+        "protein": 0,
+        "fat": 0,
+        "carb": 36,
+        "sodium": 0
+      },
+      "recipe": []
+    }
+  },
+  "economy": {
+    "days": 5,
+    "dayMs": 60000,
+    "startCash": 1200,
+    "rent": 40,
+    "targetCash": 2000,
+    "cogsRate": 0.35
+  }
+}
