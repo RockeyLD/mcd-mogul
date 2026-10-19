@@ -113,6 +113,16 @@ const MENU = {
 /* 原料成本率：MCP 不提供成本，按售价 35% 估算（已在 README 说明为游戏数值，非官方数据） */
 const COGS_RATE = 0.35;
 
+/* 经济参数读 data/economy.json（去掉 _说明 这类注释键） */
+function readEconomy() {
+  const p = path.join(ROOT, 'data', 'economy.json');
+  if (!fs.existsSync(p)) return {};
+  const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+  const out = {};
+  for (const k of Object.keys(raw)) if (!k.startsWith('_')) out[k] = raw[k];
+  return out;
+}
+
 /* ── 解析营养表 ──
    返回格式是 "  {productName,nutritionDescription,energyKj,...}:" 的竖排表格 */
 function parseNutrition(raw) {
@@ -246,17 +256,9 @@ function shortName(name){
       { key: 'assembly', label: '组装站', kind: 'assemble', hint: '要有肉饼，照着单子依序加配料' }
     ],
     dishes: dishes,
-    economy: {
-      days: 5,
-      dayMs: 60000,
-      startCash: 1000,
-      rent: 45,
-      rentStep: 15,
-      cogsRate: COGS_RATE,
-      lostPenalty: 9,
-      // 评级线：按五工位版本的实测区间标定（见 BALANCE.md），不是拍脑袋的倍数
-      grades: { S: 1700, A: 1500, B: 1250, C: 1050 }
-    }
+    /* 经济与评级参数不写死在这：唯一真相来源是 data/economy.json，
+       改数值跑 tools/sync-economy.js 就行，不用重新拉 MCP */
+    economy: Object.assign({}, readEconomy(), { cogsRate: COGS_RATE })
   };
 
   const json = JSON.stringify(snapshot, null, 2);

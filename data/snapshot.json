@@ -308,16 +308,16 @@
   "economy": {
     "days": 5,
     "dayMs": 60000,
-    "startCash": 1000,
-    "rent": 45,
-    "rentStep": 15,
-    "cogsRate": 0.35,
-    "lostPenalty": 9,
+    "startCash": 500,
+    "rent": 50,
+    "rentStep": 18,
+    "lostPenalty": 12,
     "grades": {
-      "S": 1700,
-      "A": 1500,
-      "B": 1250,
-      "C": 1050
-    }
+      "S": 1050,
+      "A": 930,
+      "B": 800,
+      "C": 650
+    },
+    "cogsRate": 0.35
   }
 }

@@ -53,6 +53,8 @@ def main():
     ap.add_argument('--top', type=int, default=0)
     ap.add_argument('--bot', type=int, default=0)
     ap.add_argument('--all', action='store_true')
+    ap.add_argument('--start', type=int, default=-1,
+                    help='手动指定起始帧（-1 = 自动挑窗口）。自动挑可能选中一段全是同一个工位的画面')
     a = ap.parse_args()
 
     files = sorted(glob.glob(os.path.join(a.src, 'f_*.png')))
@@ -68,7 +70,10 @@ def main():
         except Exception:
             meta = []
 
-    lo, hi = (0, len(files)) if a.all else pick_window(meta, a.len)
+    if a.start >= 0:
+        lo, hi = a.start, min(a.start + a.len, len(files))
+    else:
+        lo, hi = (0, len(files)) if a.all else pick_window(meta, a.len)
     if not a.all and meta:
         print('  选中第 %d~%d 帧（共 %d 帧）：%s' % (
             lo, hi - 1, len(files),

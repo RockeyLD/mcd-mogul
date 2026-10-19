@@ -809,17 +809,17 @@ body{
   "economy": {
     "days": 5,
     "dayMs": 60000,
-    "startCash": 1000,
-    "rent": 45,
-    "rentStep": 15,
-    "cogsRate": 0.35,
-    "lostPenalty": 9,
+    "startCash": 500,
+    "rent": 50,
+    "rentStep": 18,
+    "lostPenalty": 12,
     "grades": {
-      "S": 1700,
-      "A": 1500,
-      "B": 1250,
-      "C": 1050
-    }
+      "S": 1050,
+      "A": 930,
+      "B": 800,
+      "C": 650
+    },
+    "cogsRate": 0.35
   }
 }
 </script>
@@ -838,16 +838,41 @@ var META  = DATA.meta || {};
 var FRYER  = { slots: 3, ms: 3300, rawUntil: 0.60 };                 // 薯条：绿区 60%~100%
 var BASKET = { slots: 2, ms: 3400, shakeFrom: 0.42, shakeTo: 0.68,   // 炸物：42%~68% 必须抖一次篮
                rawUntil: 0.68 };
-var DRINK  = { ms: 1650, low: 0.70, high: 0.93 };                    // 饮料：绿区 70%~93%
+var DRINK  = { ms: 2000, low: 0.69, high: 0.94 };                    // 饮料：绿区 69%~94%
+/* 注杯速度从 1650ms 放到 2000ms：绿区按比例算，1650ms 时完美带只有 84ms，
+   比薯条的 292ms 窄了三倍半 —— 那不是"严格"，那是不公平。放到 2000ms 后是 111ms。 */
 var GRILL  = { slots: 3, sideMs: 2500, readyAt: 0.58, warmCap: 4 };  // 煎区：每面 58% 后翻面/起锅
-var PERFECT_Q = 0.85;
-var GOOD_Q    = 0.55;
-var SHELF_CAP = 8;          // 出餐架格数（原 9）
-var MAX_ORDERS = 7;
-var TIP_PERFECT = 0.2, TIP_GOOD = 0.1;
 
-/* 出餐架保鲜：出锅 10 秒后开始变凉，每秒掉 5% 质量，最低保留 55%（逼你现做现出） */
-var FRESH = { grace: 10000, rate: 0.05, floor: 0.55 };
+/* ── 判定（Papa's 式：能出餐不等于能拿钱，分数决定一切）──
+   绿区只是个"有效窗口"。进绿区就有分，但只有正中那一下才算真的做对了。
+   曲线是两段式：中点附近扣得极少（给"手稳"的人留出可达的满分带），
+   一旦偏出这条带就断崖式掉分（让"绿区一亮就捞"变得一文不值）。 */
+var Q_CORE  = 0.18;   // 完美带的半宽（占绿区半宽的比例），带内几乎不扣分
+var Q_SLOPE = 1.55;   // 带外的掉分斜率：d 每多 0.1 分，质量掉 0.155
+function qScore(d){
+  d = clamp(d, 0, 1);
+  if(d <= Q_CORE) return 1 - d * 0.20;
+  return clamp(1 - Q_CORE * 0.20 - (d - Q_CORE) * Q_SLOPE, 0.08, 1);
+}
+var PERFECT_Q = 0.90;       // 完美出品线（原 0.85）——现在是真难
+var GOOD_Q    = 0.70;       // "还像样"线（原 0.55）
+var SHELF_CAP = 8;
+var MAX_ORDERS = 7;
+
+/* 分档小费：按整单平均分给，不是"过线统一价"。整体比上一版砍掉一半以上 */
+var TIP_TIERS = [
+  { q: 0.90, rate: 0.12, tag: '完美', col: '#1F5723' },
+  { q: 0.75, rate: 0.05, tag: '不错', col: '#2E7D32' },
+  { q: 0.60, rate: 0.02, tag: '凑合', col: '#E0A800' },
+  { q: 0,    rate: 0,    tag: '糊弄', col: '#DA291C' }
+];
+function tipTier(q){
+  for(var i = 0; i < TIP_TIERS.length; i++) if(q >= TIP_TIERS[i].q) return TIP_TIERS[i];
+  return TIP_TIERS[TIP_TIERS.length - 1];
+}
+
+/* 出餐架保鲜：出锅 7 秒后开始变凉，每秒掉 6% 质量，最低保留 50%（逼你现做现出） */
+var FRESH = { grace: 7000, rate: 0.06, floor: 0.50 };
 
 /* 饮品颜色（真实商品编码 → 液体颜色） */
 var CUP_COLOR = {
@@ -892,7 +917,7 @@ var audioOn = true;
 
 function newState(){
   return {
-    phase: 'title', day: 1, cash: ECON.startCash || 1000,
+    phase: 'title', day: 1, cash: ECON.startCash || 500,
     tab: 'fries',
     shelf: [],
     orders: [],
@@ -926,8 +951,17 @@ function sfxCash(){ beep(1180,.07,'triangle',.05); setTimeout(function(){ beep(1
 function sfxClick(){ beep(520,.035,'square',.022); }
 
 /* ════════════════ 工具 ════════════════ */
-function yen(n){ return '¥' + Math.round(n); }
-function signedYen(n){ var v = Math.round(n); return (v>0?'+':v<0?'-':'') + '¥' + Math.abs(v); }
+/* 真实菜单里有 ¥9.5 / ¥14.5 / ¥22.5，四舍五入成整数就把"真实价格"这个卖点丢了。
+   有小数就显示一位，整数就不带尾巴。 */
+function yen(n){
+  var v = Math.round(n * 10) / 10;
+  return '¥' + (Math.abs(v - Math.round(v)) < 0.05 ? Math.round(v) : v.toFixed(1));
+}
+function signedYen(n){
+  var v = Math.round(n * 10) / 10, a = Math.abs(v);
+  var body = Math.abs(a - Math.round(a)) < 0.05 ? String(Math.round(a)) : a.toFixed(1);
+  return (v > 0 ? '+' : v < 0 ? '-' : '') + '¥' + body;
+}
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){
@@ -1054,6 +1088,9 @@ function stationLabel(k){
 /* ════════════════ 一天配置 ════════════════ */
 function dayCfg(day){
   return {
+    /* 客流和耐心维持上一版：这轮的"严格"加在判定和小费上，不再叠时间压力。
+       实测把耐心砍到 18s→12s 时，240ms 反应档的机器人第 3 天就崩（服务率 27%），
+       那不是难，那是没得玩。 */
     interval: Math.max(4000, 5600 - (day-1) * 350),      // 5.6s → 4.0s
     patience: Math.max(14000, 22000 - (day-1) * 1600),   // 22s → 14s
     duration: ECON.dayMs || 60000
@@ -1100,7 +1137,8 @@ function renderTitle(){
     '<div>' +
       '<h1>麦麦大亨 · 后厨</h1>' +
       '<p class="sub" style="margin-top:8px">顾客进门把单子挂上，你照着单子做。<br>' +
-        '五座工位，轮着跑 —— 堡要先有肉饼，肉饼得两面煎。</p>' +
+        '五座工位，轮着跑 —— 堡要先有肉饼，肉饼得两面煎。<br>' +
+        '手里只有 <b>' + yen(ECON.startCash || 500) + '</b>，餐费照付，小费得靠手上的准头赚。</p>' +
     '</div>' +
     '<div class="card">' +
       '<div class="row"><span class="k">' + friesSVG(18) + ' 薯条站</span><span class="v">下锅 → 绿区捞出</span></div>' +
@@ -1112,7 +1150,7 @@ function renderTitle(){
     '</div>' +
     '<button class="btn" id="go" style="min-width:200px">开门营业</button>' +
     '<p class="hint">一天 ' + Math.round((ECON.dayMs||60000)/1000) + ' 秒，共 ' + (ECON.days||5) + ' 天。' +
-      '房租每天涨 ¥' + (ECON.rentStep||15) + '，跑单要赔钱。做得越准，小费越多。</p>' +
+      '房租每天涨 ¥' + (ECON.rentStep||18) + '，跑单要赔钱。做得越准，小费越多。</p>' +
     '<p class="src">门店 <b>' + esc(store) + '</b> · 菜单 <b>' + n + ' 款真实在售</b>' +
       (camp ? '<br>今日活动 <b>' + esc(camp) + '</b>' : '') +
       '<br>数据来自麦当劳 MCP（mcp.mcd.cn）' +
@@ -1139,7 +1177,7 @@ function startDay(){
   S.timeLeft = S.cfg.duration;
   S.tNow = 0;
   S.stats = { served:0, lost:0, burnt:0, wasted:0, perfect:0,
-              revenue:0, tips:0, cost:0, lostPay:0, items:{} };
+              revenue:0, tips:0, cost:0, lostPay:0, qSum:0, qCount:0, items:{} };
   S.phase = 'running';
   tkEls = {};
   renderRun();
@@ -1398,8 +1436,8 @@ function clickBasket(i){
     paint(); return;
   }
   var lo = BASKET.rawUntil, mid = (lo + 1) / 2;
-  var q = clamp(1 - Math.abs(r - mid) / (mid - lo) * 0.55, 0.1, 1);
-  if(!s.shook) q = Math.min(q, 0.45);          // 没抖篮 → 粘连，卖不上价
+  var q = qScore(Math.abs(r - mid) / (mid - lo));
+  if(!s.shook) q = Math.min(q, 0.35);          // 没抖篮 → 粘成一坨，卖不上价
   var code = s.code;
   s.st = 'idle'; s.t = 0; s.code = null; s.shook = false;
   putOnShelf(code, q, null);
@@ -1504,7 +1542,7 @@ function paintGrill(){
 }
 function qualityGrill(r){
   var lo = GRILL.readyAt, mid = (lo + 1) / 2;
-  return clamp(1 - Math.abs(r - mid) / (mid - lo) * 0.55, 0.1, 1);
+  return qScore(Math.abs(r - mid) / (mid - lo));
 }
 function clickGrill(i){
   var g = S.grill[i]; if(!g) return;
@@ -1794,7 +1832,7 @@ function clickSlot(i){
 }
 function qualityFries(ratio){
   var lo = FRYER.rawUntil, mid = (lo + 1) / 2;
-  return clamp(1 - Math.abs(ratio - mid) / (mid - lo) * 0.55, 0.1, 1);
+  return qScore(Math.abs(ratio - mid) / (mid - lo));
 }
 
 /* ── 饮料 ── */
@@ -1807,7 +1845,7 @@ function finishPour(){
   if(f < DRINK.low){ if(f > 0.04){ S.stats.wasted++; sfxBad(); toast('没打满，倒了'); } return; }
   if(f > DRINK.high){ S.stats.wasted++; sfxBad(); toast('溢出来了'); return; }
   var lo = DRINK.low, hi = DRINK.high, mid = (lo + hi) / 2;
-  var q = clamp(1 - Math.abs(f - mid) / (mid - lo) * 0.55, 0.1, 1);
+  var q = qScore(Math.abs(f - mid) / (hi - lo) * 2);
   if(code) putOnShelf(code, q, null);
   sfxGood();
 }
@@ -1847,10 +1885,10 @@ function finishBurger(){
   if(!S.patties.length){ toast('保温盘没肉饼了，先去煎区'); sfxBad(); return; }
   var d = DISH[t.code];
   if(d && S.cash < d.cost){ toast('现金不够进货了'); sfxBad(); return; }
-  var topQ = clamp(1 - S.build.errors * 0.34, 0.1, 1);
+  var topQ = clamp(1 - S.build.errors * 0.45, 0.05, 1);
   var patty = S.patties.shift();
-  // 堡的质量 = 配料（手稳）+ 肉饼（火候）各占一部分
-  var q = clamp(0.62 * topQ + 0.38 * effQ(patty), 0.05, 1);
+  // 堡的质量 = 配料（手稳）+ 肉饼（火候）各占一部分，两头都得做好
+  var q = clamp(0.58 * topQ + 0.42 * effQ(patty), 0.05, 1);
   var code = t.code, tp = need.slice();
   if(d){ S.cash -= d.cost; S.stats.cost += d.cost; }
   S.build = null;
@@ -1996,19 +2034,23 @@ function serve(id, x, y){
   });
   var avgQ = qSum / o.want.length;
   var base = o.want.reduce(function(a, w){ return a + ((DISH[w.code] && DISH[w.code].price) || 0); }, 0);
-  var tipRate = avgQ >= PERFECT_Q ? TIP_PERFECT : avgQ >= GOOD_Q ? TIP_GOOD : 0;
-  var tip = Math.round(base * tipRate);
+  /* Papa's 规矩：餐费照付，但只有做得好才有小费，做得糊弄一分小费都没有 */
+  var tier = tipTier(avgQ);
+  var tip = Math.round(base * tier.rate);
   var money = base + tip;
 
   S.cash += money;
   S.stats.revenue += base;
   S.stats.tips += tip;
   S.stats.served++;
+  S.stats.qSum += avgQ; S.stats.qCount++;
   if(avgQ >= PERFECT_Q) S.stats.perfect++;
   o.want.forEach(function(w){ S.stats.items[w.code] = (S.stats.items[w.code] || 0) + 1; });
 
   renderShelf(); sfxCash();
-  if(tip > 0) popText(x, y - 14, '+' + tip + ' 小费', COL.yellowD);
+  /* 等第挂在金额下面，不挂上面 —— 票架本来就在屏幕顶端，往上弹会顶进 HUD */
+  popText(x, y + 19, tier.tag, tier.col);
+  if(tip > 0) popText(x, y - 15, '+' + tip + ' 小费', COL.yellowD);
   popText(x, y, '+' + yen(money), COL.green);
 
   var e = tkEls[o.id];
@@ -2217,11 +2259,14 @@ function paintDrink(){
     tap.setAttribute('data-m', mode);
     tap.className = 'tap' + (mode === 'idle' ? '' : ' ' + mode);
     var d = DISH[picked.drink] || {};
+    var pct0 = Math.round(S.cup.fill * 100);
     tap.innerHTML =
-      mode === 'ready' ? '松手！<b>刚好</b>' :
-      mode === 'on'    ? '注杯中…<b id="pourPct">' + Math.round(S.cup.fill * 100) + '%</b>' :
+      mode === 'ready' ? '松手！<b>刚好 <span id="pourPct">' + pct0 + '%</span></b>' :
+      mode === 'on'    ? '注杯中…<b id="pourPct">' + pct0 + '%</b>' :
                          '按住注杯 <b>绿区松手 · ' + esc(d.short || '') + '</b>';
-  } else if(mode === 'on'){
+  } else if(mode === 'on' || mode === 'ready'){
+    /* 绿区里也要继续显示百分比：只写"刚好"的话，玩家没法知道自己离正中还差多少。
+       绿区本身有 23% 宽，靠肉眼估液面高度太玄了。 */
     var pct = el('pourPct');
     if(pct) pct.textContent = Math.round(S.cup.fill * 100) + '%';
   }
@@ -2231,8 +2276,8 @@ function paintDrink(){
 function endDay(){
   S.phase = 'dayend';
   var st = S.stats;
-  var rent = (ECON.rent || 45) + (S.day - 1) * (ECON.rentStep || 0);
-  var lostPay = (st.lost || 0) * (ECON.lostPenalty || 0);
+  var rent = (ECON.rent || 50) + (S.day - 1) * (ECON.rentStep || 18);
+  var lostPay = (st.lost || 0) * (ECON.lostPenalty || 12);
   st.lostPay = lostPay;
   var profit = st.revenue + st.tips - st.cost - rent - lostPay;
   S.cash -= rent + lostPay;
@@ -2251,6 +2296,7 @@ function renderDayEnd(profit, rent, lostPay){
   }).join('　') || '一件都没卖出去';
   var traffic = st.served + st.lost;
   var rate = traffic ? Math.round(st.served / traffic * 100) : 0;
+  var avgQ = st.qCount ? st.qSum / st.qCount : 0;
 
   app.innerHTML =
   '<div class="sheet">' +
@@ -2260,6 +2306,7 @@ function renderDayEnd(profit, rent, lostPay){
       '<div class="row"><span class="k">服务率</span><span class="v ' + (rate >= 80 ? 'pos' : rate < 60 ? 'neg' : '') + '">' + rate + '%</span></div>' +
       '<div class="row"><span class="k">卖出</span><span class="v">' + sold + ' 件</span></div>' +
       '<div class="row"><span class="k">完美出品</span><span class="v ' + (st.perfect ? 'pos' : '') + '">' + st.perfect + ' 单</span></div>' +
+      '<div class="row"><span class="k">平均出品</span><span class="v ' + (avgQ >= PERFECT_Q ? 'pos' : avgQ < GOOD_Q ? 'neg' : '') + '">' + (st.qCount ? Math.round(avgQ * 100) + ' 分' : '—') + '</span></div>' +
       '<div class="row"><span class="k">跑掉的顾客</span><span class="v ' + (st.lost ? 'neg' : '') + '">' + st.lost + ' 位</span></div>' +
       '<div class="row"><span class="k">炸糊 / 倒掉</span><span class="v ' + ((Number(st.burnt) + Number(st.wasted)) ? 'neg' : '') + '">' + (Number(st.burnt) + Number(st.wasted)) + ' 份</span></div>' +
       '<div class="row"><span class="k">营业收入</span><span class="v pos">' + yen(st.revenue) + '</span></div>' +
@@ -2296,7 +2343,7 @@ function renderOver(){
   var served = S.history.reduce(function(a,h){ return a + h.served; }, 0);
   var lost = S.history.reduce(function(a,h){ return a + h.lost; }, 0);
   var cash = S.cash;
-  var G = ECON.grades || { S:1700, A:1500, B:1250, C:1050 };
+  var G = ECON.grades || { S:1050, A:930, B:800, C:650 };
   var g, note;
   if(cash >= G.S)      { g='S'; note='这店你开出了名堂。'; }
   else if(cash >= G.A) { g='A'; note='稳，火候拿得住。'; }

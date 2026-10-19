@@ -1,0 +1,10 @@
+{
+  "_说明": "经济与评级参数。这是唯一真相来源：tools/pull-mcp.js 拉数据时用它，tools/sync-economy.js 只用它改数值（不需要 MCP Token）。改完跑一次 node tools/sync-economy.js 就会同步到 data/snapshot.json 和 game/index.html 的内嵌块。",
+  "days": 5,
+  "dayMs": 60000,
+  "startCash": 500,
+  "rent": 50,
+  "rentStep": 18,
+  "lostPenalty": 12,
+  "grades": { "S": 1050, "A": 930, "B": 800, "C": 650 }
+}

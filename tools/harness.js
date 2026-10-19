@@ -11,6 +11,13 @@ const MODE = process.argv[3] || 'smart';
 const STEP = +(process.argv[4] || 16);
 const GUARD = +(process.argv[5] || 80000);
 
+/* smart / dumb 是 16ms 反应（机器精度）。
+   human 是 N ms 反应 + ±40ms 抖动，N 默认 240（普通人），可传第 6 个参数调：
+     150 = 手快的人，240 = 普通，300 = 手慢
+   评级线应该按 human 档标定，而不是按 16ms 的机器人。 */
+const HUMAN_LAT = +(process.argv[6] || 240);
+let humanNext = 0;
+
 const html = fs.readFileSync(FILE, 'utf8');
 
 let vnow = 0, rafCb = null, tid = 1, timers = [], finished = false;
@@ -114,10 +121,22 @@ const patties = () => {
   return qa('.wc.has', w).length;
 };
 
-/* 机器人按"进度条"决定出手时机：绿区起点出手的质量分只有 0.3，正中才是 1.0。
-   BAND = 完美出手区间（相对进度条），PANIC = 再不动就要烧了 */
-const BAND = [0.76, 0.87];
+/* 机器人按"进度条"决定出手时机。
+   游戏的评分是两段式曲线（见 game/index.html 的 qScore）：绿区正中 1.0 分，
+   偏出完美带就断崖式掉分。所以机器人不能"见绿就点"，得算出自己现在出手能拿几分。 */
+const AIM = { fries: { lo: 0.60, mid: 0.80 }, basket: { lo: 0.68, mid: 0.84 }, grill: { lo: 0.58, mid: 0.79 } };
+const Q_CORE = 0.18, Q_SLOPE = 1.55;
 const PANIC = 0.95;
+function qScore(d) {
+  d = Math.max(0, Math.min(1, d));
+  if (d <= Q_CORE) return 1 - d * 0.20;
+  return Math.max(0.08, 1 - Q_CORE * 0.20 - (d - Q_CORE) * Q_SLOPE);
+}
+function scoreAt(kind, r) {
+  const a = AIM[kind];
+  if (!a) return 0;
+  return qScore(Math.abs(r - a.mid) / (a.mid - a.lo));
+}
 function ratioOf(node) {
   const f = node && node.querySelector('.fill');
   if (!f) return 0;
@@ -133,9 +152,9 @@ function actCurrent(cur) {
     for (const n of nodes) {
       if (n.classList.contains('ready')) {
         const r = ratioOf(n);
-        if (r >= BAND[0] && r <= BAND[1]) { n.click(); return 'act'; }
+        if (scoreAt(cur, r) >= 0.91) { n.click(); return 'act'; }   // 进完美带就出手
         if (r > PANIC) { n.click(); return 'act'; }
-        if (r >= 0.70) return 'camp';
+        if (scoreAt(cur, r) >= 0.55) return 'camp';                 // 快到了，守着
         return null;
       }
       if (n.classList.contains('burnt')) { n.click(); return 'act'; }
@@ -146,9 +165,9 @@ function actCurrent(cur) {
     for (const n of qa('[data-gr]')) {
       if (n.classList.contains('flip') || n.classList.contains('ready')) {
         const r = ratioOf(n);
-        if (r >= BAND[0] && r <= BAND[1]) { n.click(); return 'act'; }
+        if (scoreAt('grill', r) >= 0.91) { n.click(); return 'act'; }
         if (r > PANIC) { n.click(); return 'act'; }
-        if (r >= 0.70) return 'camp';
+        if (scoreAt('grill', r) >= 0.55) return 'camp';
         return null;
       }
       if (n.classList.contains('burnt')) { n.click(); return 'act'; }
@@ -217,11 +236,20 @@ function botStep() {
     if (!g.disabled) { g.dispatchEvent(new win.MouseEvent('click', { bubbles: true, clientX: 100, clientY: 100 })); return; }
   }
 
-  // 2) 正在注液：锁死在饮料站
+  // 2) 正在注液：锁死在饮料站，注到八成满（绿区正中附近）才松手
+  //    注意：绿区是从 70% 开始的，进绿区就松手只能拿 8 分，所以必须继续注到 80%
   const tap = el('tap');
   if (tap) {
-    if (tap.classList.contains('ready')) { win.dispatchEvent(new win.Event('pointerup', { bubbles: true })); return; }
-    if (tap.classList.contains('on')) return;
+    const pctEl = el('pourPct');
+    const pct = pctEl ? (parseFloat(pctEl.textContent) || 0) : 0;
+    const pouring = tap.classList.contains('on') || tap.classList.contains('ready');
+    if (pouring) {
+      if (pct >= 80) { win.dispatchEvent(new win.Event('pointerup', { bubbles: true })); return; }
+      if (tap.classList.contains('ready') && !pctEl) {   // 读不到百分比时的兜底，别让杯溢出来
+        win.dispatchEvent(new win.Event('pointerup', { bubbles: true })); return;
+      }
+      return;
+    }
   }
 
   const wanted = neededCodes();
@@ -265,7 +293,11 @@ let peakNodes = 0;
 while (!finished && guard++ < GUARD) {
   if (Date.now() - T0 > 180000) { stuckInfo = '超时 180s @帧' + guard; break; }
   tick(STEP);
-  botStep();
+  if (MODE === 'human') {
+    if (vnow >= humanNext) { botStep(); humanNext = vnow + HUMAN_LAT + (Math.random() - 0.5) * 80; }
+  } else {
+    botStep();
+  }
   peakNodes = Math.max(peakNodes, doc.body.childNodes.length);
   const alive = el('go') || el('nx') || el('rs') || el('hTime');
   if (!alive && stuckSince < 0) stuckSince = guard;
