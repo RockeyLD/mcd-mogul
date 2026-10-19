@@ -60,19 +60,21 @@ python3 -m http.server 8000 --directory game
 | `FRYER.slots` | 3 | 油槽数量 |
 | `FRYER.rawUntil` | 0.60 | 生→可捞的分界（绿区起点） |
 | `BASKET.ms` | 3400 | 一篮炸物到炸糊的时长 |
-| `BASKET.shakeFrom` / `shakeTo` | 0.42 / 0.68 | 抖篮窗口；错过粘连（质量封顶 0.45） |
+| `BASKET.shakeFrom` / `shakeTo` | 0.42 / 0.68 | 抖篮窗口；错过粘连（质量封顶 0.35） |
 | `GRILL.sideMs` | 2500 | 肉饼单面煎制时长 |
 | `GRILL.readyAt` | 0.58 | 单面可翻面 / 可起锅的进度 |
 | `GRILL.warmCap` | 4 | 保温盘（组装堡必须消耗一块） |
-| `FRESH.grace` / `rate` / `floor` | 10000 / 0.05 / 0.55 | 出餐架保鲜：10 秒后每秒掉 5% |
-| `DRINK.ms` | 1650 | 注满一杯的时长 |
-| `DRINK.low` / `DRINK.high` | 0.70 / 0.93 | 饮料绿区上下线 |
-| `PERFECT_Q` / `GOOD_Q` | 0.85 / 0.55 | 完美 / 良好的质量分界线 |
+| `FRESH.grace` / `rate` / `floor` | 7000 / 0.06 / 0.50 | 出餐架保鲜：7 秒后每秒掉 6% |
+| `DRINK.ms` | 2000 | 注满一杯的时长 |
+| `DRINK.low` / `DRINK.high` | 0.69 / 0.94 | 饮料绿区上下线 |
+| `Q_CORE` / `Q_SLOPE` | 0.18 / 1.55 | 完美带半宽（占绿区半宽比例）/ 出带后的掉分斜率 |
+| `PERFECT_Q` / `GOOD_Q` | 0.90 / 0.70 | 完美 / 良好的质量分界线 |
+| `TIP_TIERS` | 12/5/2/0 % | 按质量分档发小费，对应 0.90 / 0.75 / 0.60 / 更低 |
 | `SHELF_CAP` | 8 | 出餐架格数 |
 | `MAX_ORDERS` | 7 | 同时在排的订单上限 |
 | `ECON.dayMs` | 60000 | 一天多少毫秒 |
 
-经济学参数在 `data/snapshot.json` 的 `economy` 里（`days` / `startCash` / `rent` / `rentStep` / `lostPenalty` / `grades`）。
+经济学参数在 `data/economy.json` 里（`days` / `startCash` / `rent` / `rentStep` / `lostPenalty` / `grades`），改完跑 `node tools/sync-economy.js` 同步进快照和内嵌块。
 客流与耐心在 `dayCfg()` 里随天数递减。
 
 改完必须**真的跑一遍**再告诉用户"好了"。至少验证：
@@ -86,7 +88,8 @@ NODE_PATH=~/.workbuddy/binaries/node/workspace/node_modules \
   node tools/harness.js game/index.html smart 16 80000
 ```
 
-判据：`smart` 落在 A 线附近（1500~1700）、服务率 90%±、现金守恒误差 ≤ ¥4；`dumb` 应该很快破产。
+判据：`smart` 落在 A 线附近（930~1050）、服务率 90%±、现金守恒误差 ≤ ¥4；`dumb` 应该很快破产。
+单局噪声不小（同档两局能差 ¥300），评级线只能算"大致对"，真正的校准靠真人试玩。
 
 ## 加一道新菜
 

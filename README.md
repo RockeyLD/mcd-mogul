@@ -55,14 +55,24 @@
 | **煎区** | 放肉饼 → 第 1 面到绿区**翻面** → 第 2 面到绿区**起锅**，进保温盘（4 格） | 两面都到点没动＝焦；保温盘满了再起锅＝扔掉 |
 | **组装站** | **先有肉饼**，再照着票面顺序逐层点配料，加满合上出餐 | 顺序错了抖一下，连错 2 次这份废掉；没肉饼出不了餐 |
 
-![煎区](docs/shot_grill.png)
+<p align="center">
+  <img src="docs/shot_fries.png" width="32%" alt="薯条站：三个油槽各自计时">
+  <img src="docs/shot_basket.png" width="32%" alt="炸物站：中途要抖篮">
+  <img src="docs/shot_drink.png" width="32%" alt="饮料站：按住注杯，液面进绿区松手">
+</p>
+<p align="center">
+  <img src="docs/shot_grill.png" width="49%" alt="煎区：两面煎，绿区翻面、绿区起锅">
+  <img src="docs/shot_assembly.png" width="49%" alt="组装站：照着票一层层加配料">
+</p>
+
+<sub>↑ 真人速度（200ms 反应）跑出来的截面，不是摆拍</sub>
 
 ### 压力从哪来
 
 - 油锅、炸篮、煎位同时在走，但你一屏只能看一个工位
 - 薯条熟成窗口 3.3 秒、绿区只占 40%；炸物 3.4 秒；煎区每面 2.5 秒、两面都要盯
 - 汉堡必须两块工序接力：煎区出肉饼 → 组装站才做得出来，肉饼断供整条线停摆
-- 顾客耐心从第 1 天的 18 秒缩到第 5 天的 12 秒，客流间隔从 5.4 秒压到 4.0 秒
+- 顾客耐心从第 1 天的 22 秒缩到第 5 天的 14 秒，客流间隔从 5.6 秒压到 4.0 秒
 - 出餐架只有 8 格，而且**放凉会掉质量**——出锅 7 秒后开始，每秒掉 6%
 - 手里只有 ¥500，房租每天涨 ¥18，跑单每人赔 ¥12
 
@@ -163,6 +173,15 @@ python tools/make-gif.py -o docs/demo.gif -s shots/<时间戳> -w 720 -c 112 -f 
 `-n` 是保留多少帧：太小只看到一个工位，太大容易混进空店的片段。
 自动挑窗口只按"票架 + 工位种类"打分，**有时候会选中一段全是同一个工位守株待兔的画面**，那就用 `--start` 手点。
 
+### 想重拍工位截图
+
+```bash
+node tools/shoot-shots.js      # 输出 docs/shot_{title,fries,basket,drink,grill,assembly,mobile}.png
+```
+
+机器人被放慢到 200ms 一次出手（16ms 那种手速会把单做完，票架永远是空的，拍出来像没人光顾）。
+逐站截之前会等"这站真的有活在走 + 票架上还有单"，等不到就自己先备一锅 —— 所以每张图里锅都不空。
+
 ### 想换成自己附近的店
 
 需要 Node 18+（要 `fetch`）和一个麦当劳 MCP Token（在 [open.mcd.cn](https://open.mcd.cn/mcp) 控制台申请）。
@@ -209,6 +228,7 @@ node tools/pull-mcp.js --dry
 ├── tools/harness.js         无头测试台：jsdom 虚拟时钟 + 三档机器人跑完整 5 天
 ├── tools/sync-economy.js    只同步经济数值，不需要 MCP Token
 ├── tools/shoot-gif.js       录屏采集：CDP 驱动无头 Chrome，让机器人真的在玩，逐帧截图
+├── tools/shoot-shots.js     工位截图：同一套机器人，逐站停下来拍一张（docs 里那几张）
 ├── tools/make-gif.py        把采集到的帧合成 GIF（全局调色板，避免逐帧闪色）
 ├── docs/demo.gif            README 顶部这段真实玩法录屏
 ├── docs/                    五座工位各一张截图
