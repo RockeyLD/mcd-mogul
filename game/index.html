@@ -104,12 +104,12 @@ body{
 .tk.ready .tk-go:active{transform:translateY(2px);box-shadow:0 1px 0 var(--green-d)}
 
 /* ══ Tabs ══ */
-.tabs{display:flex;gap:6px;flex:0 0 auto}
+.tabs{display:flex;gap:5px;flex:0 0 auto}
 .tab{
   flex:1;position:relative;border:1.5px solid var(--line);background:var(--card);
-  border-radius:11px;padding:8px 6px;cursor:pointer;font-family:inherit;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  font-size:12px;font-weight:650;color:var(--dim);
+  border-radius:11px;padding:5px 2px 6px;cursor:pointer;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:10.5px;font-weight:650;color:var(--dim);letter-spacing:.02em;
   transition:all .12s;box-shadow:var(--shadow);
 }
 .tab svg{width:19px;height:19px;transition:opacity .12s;opacity:.55}
@@ -186,6 +186,70 @@ body{
 .slot.burnt .bar .fill{background:var(--burnt)}
 .slot .lbl2{text-align:center;font-size:9.5px;color:var(--dimmer);margin-top:3px;height:14px}
 
+/* 炸物站：抖篮窗口 */
+.slot.shake{border-color:var(--red);background:#FFF6F4;animation:pulseShake .75s ease-in-out infinite}
+@keyframes pulseShake{0%,100%{box-shadow:0 0 0 0 rgba(218,41,28,.34)}50%{box-shadow:0 0 0 7px rgba(218,41,28,0)}}
+.slot.shake .slotbig{color:var(--red);font-size:15px;font-weight:800}
+.bskwrap{display:flex;align-items:flex-end;justify-content:center;gap:4px;padding-bottom:26px;position:relative;z-index:2}
+.bskwrap svg{filter:drop-shadow(0 1px 0 rgba(120,90,60,.18))}
+
+/* 煎区 */
+.grillbox{display:flex;gap:8px;flex:1 1 auto;min-height:120px;max-height:300px}
+.gr{
+  flex:1;min-width:0;border:1.5px solid var(--line);border-radius:13px;background:#FDFAF5;
+  position:relative;overflow:hidden;cursor:pointer;padding:8px 7px 7px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  transition:border-color .12s,background .12s,transform .05s;
+}
+.gr:active{transform:scale(.975)}
+.gr.idle{border-style:dashed;background:#FBF6EE;cursor:default}
+.gr.s1{border-color:var(--yellow-d);background:#FFFCF2}
+.gr.flip{border-color:var(--red);background:#FFF6F4;animation:pulseShake .8s ease-in-out infinite}
+.gr.ready{border-color:var(--green-l);background:#F2FBF2;animation:pulse 1s ease-in-out infinite}
+.gr.burnt{border-color:#C9BCAE;background:#F7F3EE}
+.gr .griddle{
+  position:absolute;left:0;right:0;bottom:46px;height:30px;
+  background:linear-gradient(180deg,rgba(140,115,90,.16),rgba(100,78,55,.24));
+  border-top:1.5px solid rgba(100,78,55,.26);
+}
+.gr .patty{
+  position:absolute;left:50%;bottom:52px;transform:translateX(-50%);
+  width:78%;height:20px;border-radius:10px;
+  background:linear-gradient(180deg,#D89A78,#B87550);
+  border:1px solid rgba(110,63,31,.32);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -3px 0 rgba(0,0,0,.10);
+  transition:background .25s,height .25s;
+}
+.gr .patty::after{
+  content:'';position:absolute;inset:5px 8px auto;height:2px;border-radius:2px;
+  background:rgba(110,63,31,.28);
+  box-shadow:0 5px 0 rgba(110,63,31,.20),0 -6px 0 rgba(110,63,31,.16);
+}
+.gr .patty.half{background:linear-gradient(180deg,#C08559,#96603A)}
+.gr .patty.done{background:linear-gradient(180deg,#A9713F,#7A4A26)}
+.gr .patty.burnt{background:linear-gradient(180deg,#4A3527,#2A1C12)}
+.gr .grtag{position:absolute;top:8px;left:0;right:0;text-align:center;font-size:10px;color:var(--dim);font-weight:700}
+.gr .grbig{
+  position:absolute;top:36%;left:0;right:0;transform:translateY(-50%);text-align:center;
+  font-size:23px;font-weight:800;color:#CFC5B4;font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+}
+.gr.ready .grbig{color:#2E7D20;font-size:17px}
+.gr.flip .grbig{color:var(--red);font-size:16px}
+.gr.idle .grbig{font-size:11.5px;font-weight:600;color:var(--dimmer);letter-spacing:0}
+.gr.burnt .grbig{color:var(--burnt);opacity:.8;font-size:17px}
+.warm{display:flex;align-items:center;gap:6px;flex:0 0 auto;flex-wrap:wrap}
+.warm .wlbl{font-size:10px;color:var(--dimmer);letter-spacing:.06em}
+.warm .wc{
+  width:38px;height:32px;border:1.5px dashed var(--line);border-radius:8px;
+  background:#FDFAF5;display:flex;align-items:center;justify-content:center;position:relative;
+}
+.warm .wc.has{border-style:solid;border-color:#C9954F;background:#FFF8EA}
+.warm .wc svg{width:24px;height:24px}
+.warm .wc .q{
+  position:absolute;right:-3px;bottom:-3px;font-size:8.5px;font-weight:800;color:#fff;
+  background:var(--green);border-radius:4px;padding:0 3px;line-height:12px;
+}
+
 /* 饮料站 */
 .drinkwrap{
   flex:1 1 auto;display:flex;flex-direction:column;align-items:center;
@@ -243,6 +307,13 @@ body{
 .tap.ready b{color:var(--green)}
 
 /* 组装站 */
+.pstock{
+  float:right;display:inline-flex;align-items:center;gap:3px;letter-spacing:0;
+  font-size:9.5px;font-weight:700;color:var(--dim);background:#FDFAF5;
+  border:1px solid var(--line);border-radius:20px;padding:1px 7px 1px 3px;
+}
+.pstock svg{width:14px;height:14px}
+.pstock.out{color:var(--red);border-color:#E8A0A0;background:#FFF6F4}
 .asm{flex:1 1 auto;display:flex;gap:10px;min-height:0}
 .asm-left{
   flex:0 0 42%;min-width:172px;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -451,16 +522,28 @@ body{
       "hint": "下锅 → 绿区捞出，过火就焦"
     },
     {
+      "key": "basket",
+      "label": "炸物站",
+      "kind": "basket",
+      "hint": "下锅 → 中途抖篮 → 绿区捞出"
+    },
+    {
       "key": "drink",
       "label": "饮料站",
       "kind": "pour",
       "hint": "按住 → 绿区松手，满溢作废"
     },
     {
+      "key": "grill",
+      "label": "煎区",
+      "kind": "grill",
+      "hint": "两面煎：绿区翻面 → 绿区起锅"
+    },
+    {
       "key": "assembly",
       "label": "组装站",
       "kind": "assemble",
-      "hint": "照着单子依序加配料"
+      "hint": "要有肉饼，照着单子依序加配料"
     }
   ],
   "dishes": {
@@ -519,7 +602,7 @@ body{
       "price": 14.5,
       "originalPrice": 14.5,
       "cost": 5.1,
-      "station": "fries",
+      "station": "basket",
       "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png",
       "nutrition": {
         "kcal": 213,
@@ -621,7 +704,7 @@ body{
       "price": 14.5,
       "originalPrice": 14.5,
       "cost": 5.1,
-      "station": "fries",
+      "station": "basket",
       "image": "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png",
       "nutrition": {
         "kcal": 224,
@@ -726,10 +809,17 @@ body{
   "economy": {
     "days": 5,
     "dayMs": 60000,
-    "startCash": 1200,
-    "rent": 40,
-    "targetCash": 2000,
-    "cogsRate": 0.35
+    "startCash": 1000,
+    "rent": 45,
+    "rentStep": 15,
+    "cogsRate": 0.35,
+    "lostPenalty": 9,
+    "grades": {
+      "S": 1700,
+      "A": 1500,
+      "B": 1250,
+      "C": 1050
+    }
   }
 }
 </script>
@@ -744,14 +834,20 @@ var DISH  = DATA.dishes || {};
 var ECON  = DATA.economy || {};
 var META  = DATA.meta || {};
 
-/* 工位参数 */
-var FRYER  = { slots: 3, ms: 3800, rawUntil: 0.55 };
-var DRINK  = { ms: 1900, low: 0.66, high: 0.94 };
+/* ════════════════ 参数（全在这一块，改一行即生效）════════════════ */
+var FRYER  = { slots: 3, ms: 3300, rawUntil: 0.60 };                 // 薯条：绿区 60%~100%
+var BASKET = { slots: 2, ms: 3400, shakeFrom: 0.42, shakeTo: 0.68,   // 炸物：42%~68% 必须抖一次篮
+               rawUntil: 0.68 };
+var DRINK  = { ms: 1650, low: 0.70, high: 0.93 };                    // 饮料：绿区 70%~93%
+var GRILL  = { slots: 3, sideMs: 2500, readyAt: 0.58, warmCap: 4 };  // 煎区：每面 58% 后翻面/起锅
 var PERFECT_Q = 0.85;
 var GOOD_Q    = 0.55;
-var SHELF_CAP = 9;
-var MAX_ORDERS = 6;
+var SHELF_CAP = 8;          // 出餐架格数（原 9）
+var MAX_ORDERS = 7;
 var TIP_PERFECT = 0.2, TIP_GOOD = 0.1;
+
+/* 出餐架保鲜：出锅 10 秒后开始变凉，每秒掉 5% 质量，最低保留 55%（逼你现做现出） */
+var FRESH = { grace: 10000, rate: 0.05, floor: 0.55 };
 
 /* 饮品颜色（真实商品编码 → 液体颜色） */
 var CUP_COLOR = {
@@ -796,14 +892,14 @@ var audioOn = true;
 
 function newState(){
   return {
-    phase: 'title', day: 1, cash: ECON.startCash || 1200,
+    phase: 'title', day: 1, cash: ECON.startCash || 1000,
     tab: 'fries',
     shelf: [],
     orders: [],
-    slots: [],
+    slots: [], baskets: [], grill: [], patties: [],
     cup: { fill: 0, pouring: false, code: null },
     build: null,
-    spawnAcc: 0, timeLeft: 0, cfg: null,
+    spawnAcc: 0, timeLeft: 0, cfg: null, tNow: 0,
     stats: null, history: []
   };
 }
@@ -879,6 +975,14 @@ function wingSVG(size){
     '<path d="M5 17c0-4.4 2.8-8.6 7-9.8l3.6 1.4c1.3.5 2 1.9 1.6 3.2l-1.4 4.5c-.4 1.2-1.5 2-2.8 2H5z" fill="#C9762C"/>' +
     '<path d="M14.5 8.6c1.6-.6 3.4.1 4.1 1.6" stroke="#A75C1D" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>';
 }
+function pattySVG(size){
+  var s = size || 22;
+  return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
+    '<ellipse cx="12" cy="15.5" rx="9.4" ry="4.6" fill="#8C5A34"/>' +
+    '<ellipse cx="12" cy="13.4" rx="9.4" ry="4.6" fill="#A16A3F" stroke="#7A4A28" stroke-width=".8"/>' +
+    '<path d="M6.4 12.6h2.6M11 11.8h2.6M15.6 12.6h2.4" stroke="#6B3F22" stroke-width="1.3" stroke-linecap="round" opacity=".7"/>' +
+    '<ellipse cx="12" cy="8.6" rx="7.4" ry="3.4" fill="#E8BE85" opacity=".28"/></svg>';
+}
 function cupSVG(size, code){
   var s = size || 22, c = CUP_COLOR[code] || '#3D2416';
   return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" aria-hidden="true">' +
@@ -933,11 +1037,25 @@ function sig(toppings){
   return (toppings || []).slice().sort().join('|');
 }
 
+/* ════════════════ 工位注册表 ════════════════
+   加一个工位 = 这里加一行 + 一个 render/paint 函数。tab、角标、调度全走这张表。 */
+var STATIONS = [
+  { key:'fries',    label:'薯条', full:'薯条站', kind:'fryer',    icon:function(){ return friesSVG(19,'#B0824A'); } },
+  { key:'basket',   label:'炸物', full:'炸物站', kind:'basket',   icon:function(){ return nuggetSVG(19); } },
+  { key:'drink',    label:'饮料', full:'饮料站', kind:'pour',     icon:function(){ return cupSVG(19,'9900008751'); } },
+  { key:'grill',    label:'煎区', full:'煎 区',  kind:'grill',    icon:function(){ return pattySVG(19); } },
+  { key:'assembly', label:'组装', full:'组装站', kind:'assemble', icon:function(){ return burgerSVG(19); } }
+];
+function stationLabel(k){
+  for(var i=0;i<STATIONS.length;i++) if(STATIONS[i].key===k) return STATIONS[i].full;
+  return k;
+}
+
 /* ════════════════ 一天配置 ════════════════ */
 function dayCfg(day){
   return {
-    interval: Math.max(3400, 5400 - (day-1) * 420),
-    patience: Math.max(15000, 22000 - (day-1) * 1500),
+    interval: Math.max(4000, 5600 - (day-1) * 350),      // 5.6s → 4.0s
+    patience: Math.max(14000, 22000 - (day-1) * 1600),   // 22s → 14s
     duration: ECON.dayMs || 60000
   };
 }
@@ -946,22 +1064,24 @@ function dayCfg(day){
 function makeOrderWant(day){
   var r = Math.random(), n;
   if(day <= 1)      n = 1;
-  else if(day <= 3) n = r < 0.55 ? 1 : 2;
-  else              n = r < 0.32 ? 1 : (r < 0.78 ? 2 : 3);
+  else if(day <= 2) n = r < 0.62 ? 1 : 2;
+  else if(day <= 4) n = r < 0.46 ? 1 : (r < 0.92 ? 2 : 3);
+  else              n = r < 0.34 ? 1 : (r < 0.88 ? 2 : 3);
 
-  var fry = dishesOf('fries'), drk = dishesOf('drink'), asm = dishesOf('assembly');
+  var fry = dishesOf('fries'), bsk = dishesOf('basket'),
+      drk = dishesOf('drink'), asm = dishesOf('assembly');
   var want = [];
   for(var i = 0; i < n; i++){
     var roll = Math.random();
-    var pool = roll < 0.34 ? fry : roll < 0.64 ? drk : asm;
+    var pool = roll < 0.20 ? fry : roll < 0.38 ? bsk : roll < 0.64 ? drk : asm;
     if(!pool.length) pool = Object.keys(DISH);
     var code = pool[(Math.random() * pool.length) | 0];
     var d = DISH[code];
     var toppings = null;
     if(d.station === 'assembly' && d.recipe && d.recipe.length){
       toppings = d.recipe.slice();
-      // 15% 的顾客会挑掉一项配料（"不要酸黄瓜"）
-      if(Math.random() < 0.15 && toppings.length > 1){
+      // 20% 的顾客会挑掉一项配料（"不要酸黄瓜"）
+      if(Math.random() < 0.20 && toppings.length > 1){
         toppings.splice((Math.random() * toppings.length) | 0, 1);
       }
     }
@@ -980,16 +1100,19 @@ function renderTitle(){
     '<div>' +
       '<h1>麦麦大亨 · 后厨</h1>' +
       '<p class="sub" style="margin-top:8px">顾客进门把单子挂上，你照着单子做。<br>' +
-        '三座工位，轮着跑。</p>' +
+        '五座工位，轮着跑 —— 堡要先有肉饼，肉饼得两面煎。</p>' +
     '</div>' +
     '<div class="card">' +
-      '<div class="row"><span class="k">' + friesSVG(18) + ' 薯条站</span><span class="v">选品 → 下锅 → 绿区捞出</span></div>' +
-      '<div class="row"><span class="k">' + cupSVG(18) + ' 饮料站</span><span class="v">选品 → 按住 → 绿区松手</span></div>' +
-      '<div class="row"><span class="k">' + burgerSVG(18) + ' 组装站</span><span class="v">按单子逐层加配料</span></div>' +
-      '<div class="row"><span class="k">出餐架</span><span class="v">做好的先摆着，凑够就送</span></div>' +
+      '<div class="row"><span class="k">' + friesSVG(18) + ' 薯条站</span><span class="v">下锅 → 绿区捞出</span></div>' +
+      '<div class="row"><span class="k">' + nuggetSVG(18) + ' 炸物站</span><span class="v">下锅 → 中途抖篮 → 捞出</span></div>' +
+      '<div class="row"><span class="k">' + cupSVG(18) + ' 饮料站</span><span class="v">按住注杯 → 绿区松手</span></div>' +
+      '<div class="row"><span class="k">' + pattySVG(18) + ' 煎区</span><span class="v">两面煎：翻面 → 起锅</span></div>' +
+      '<div class="row"><span class="k">' + burgerSVG(18) + ' 组装站</span><span class="v">要肉饼，按单子加配料</span></div>' +
+      '<div class="row"><span class="k">出餐架</span><span class="v">放凉会掉质量，现做现出</span></div>' +
     '</div>' +
     '<button class="btn" id="go" style="min-width:200px">开门营业</button>' +
-    '<p class="hint">一天 ' + Math.round((ECON.dayMs||60000)/1000) + ' 秒，共 ' + (ECON.days||5) + ' 天。做得越准，小费越多。</p>' +
+    '<p class="hint">一天 ' + Math.round((ECON.dayMs||60000)/1000) + ' 秒，共 ' + (ECON.days||5) + ' 天。' +
+      '房租每天涨 ¥' + (ECON.rentStep||15) + '，跑单要赔钱。做得越准，小费越多。</p>' +
     '<p class="src">门店 <b>' + esc(store) + '</b> · 菜单 <b>' + n + ' 款真实在售</b>' +
       (camp ? '<br>今日活动 <b>' + esc(camp) + '</b>' : '') +
       '<br>数据来自麦当劳 MCP（mcp.mcd.cn）' +
@@ -1003,14 +1126,20 @@ function startDay(){
   S.cfg = dayCfg(S.day);
   S.slots = [];
   for(var i = 0; i < FRYER.slots; i++) S.slots.push({ st:'idle', t:0, code:null });
+  S.baskets = [];
+  for(var b = 0; b < BASKET.slots; b++) S.baskets.push({ st:'idle', t:0, code:null, shook:false });
+  S.grill = [];
+  for(var g = 0; g < GRILL.slots; g++) S.grill.push({ st:'idle', t:0, side:1, q1:1 });
+  S.patties = [];
   S.cup = { fill:0, pouring:false, code:null };
   S.build = null;
   S.shelf = [];
   S.orders = [];
   S.spawnAcc = S.cfg.interval * 0.7;
   S.timeLeft = S.cfg.duration;
+  S.tNow = 0;
   S.stats = { served:0, lost:0, burnt:0, wasted:0, perfect:0,
-              revenue:0, tips:0, cost:0, items:{} };
+              revenue:0, tips:0, cost:0, lostPay:0, items:{} };
   S.phase = 'running';
   tkEls = {};
   renderRun();
@@ -1037,26 +1166,35 @@ function renderRun(){
 /* ── 工位 tab ── */
 function renderTabs(){
   var t = el('tabs'); if(!t) return;
-  var defs = [
-    { k:'fries',    label:'薯条站', icon:friesSVG(19,'#B0824A') },
-    { k:'drink',    label:'饮料站', icon:cupSVG(19) },
-    { k:'assembly', label:'组装站', icon:burgerSVG(19) }
-  ];
-  t.innerHTML = defs.map(function(d){
-    var n = pendingOfStation(d.k);
-    return '<button class="tab' + (S.tab === d.k ? ' on' : '') + '" data-tab="' + d.k + '">' +
-      d.icon + '<span>' + d.label + '</span>' +
-      '<i class="badge" id="bd-' + d.k + '"' + (n > 0 ? '' : ' style="display:none"') + '>' + n + '</i>' +
+  t.innerHTML = STATIONS.map(function(d){
+    var n = pendingOfStation(d.key);
+    return '<button class="tab' + (S.tab === d.key ? ' on' : '') + '" data-tab="' + d.key + '" title="' + d.full + '">' +
+      d.icon() + '<span>' + d.label + '</span>' +
+      '<i class="badge" id="bd-' + d.key + '"' + (n > 0 ? '' : ' style="display:none"') + '>' + n + '</i>' +
     '</button>';
   }).join('');
 }
-function pendingOfStation(station){
+/* 票面上还有多少件这个工位的东西没着落（不算出餐架已有） */
+function countPending(station){
   var need = 0;
   S.orders.forEach(function(o){
     o.want.forEach(function(w){
       if(DISH[w.code] && DISH[w.code].station === station) need++;
     });
   });
+  return need;
+}
+function pendingOfStation(station){
+  if(station === 'grill'){
+    // 煎区不产出菜品，只产出肉饼：待做的堡 − 架上已做好的堡 − 保温盘里的肉饼
+    // 注意需求要按组装站数，不能按 grill 自己的菜品数（那永远是 0）
+    var made = 0;
+    S.shelf.forEach(function(x){
+      if(DISH[x.code] && DISH[x.code].station === 'assembly') made++;
+    });
+    return Math.max(0, countPending('assembly') - made - S.patties.length);
+  }
+  var need = countPending(station);
   var have = 0;
   S.shelf.forEach(function(x){
     if(DISH[x.code] && DISH[x.code].station === station) have++;
@@ -1064,23 +1202,25 @@ function pendingOfStation(station){
   return Math.max(0, need - have);
 }
 function paintBadges(){
-  ['fries','drink','assembly'].forEach(function(k){
-    var node = el('bd-' + k);
+  STATIONS.forEach(function(d){
+    var node = el('bd-' + d.key);
     if(!node) return;
-    var n = pendingOfStation(k);
+    var n = pendingOfStation(d.key);
     if(n > 0){ node.style.display = ''; if(node.textContent !== String(n)) node.textContent = n; }
     else node.style.display = 'none';
   });
 }
 
 /* ── 工位区 ── */
-var picked = { fries: null, drink: null };
+var picked = { fries: null, basket: null, drink: null };
 
 function renderBench(){
   var b = el('bench'); if(!b) return;
-  if(S.tab === 'fries')      renderFries(b);
-  else if(S.tab === 'drink') renderDrink(b);
-  else                       renderAssembly(b);
+  if(S.tab === 'fries')           renderFries(b);
+  else if(S.tab === 'basket')     renderBasket(b);
+  else if(S.tab === 'drink')      renderDrink(b);
+  else if(S.tab === 'grill')      renderGrill(b);
+  else                            renderAssembly(b);
 }
 
 /* ── 薯条站 ── */
@@ -1119,6 +1259,294 @@ function renderFries(b){
     box.appendChild(d);
   }
 }
+/* ── 炸物站（抖篮）── */
+function renderBasket(b){
+  var list = dishesOf('basket');
+  if(!picked.basket && list.length) picked.basket = list[0];
+  b.innerHTML =
+    '<h3>炸 篮 · 选 品 下 料</h3>' +
+    '<div class="picker" id="pick-basket">' +
+      list.map(function(k){
+        var d = DISH[k];
+        return '<button class="pk' + (picked.basket === k ? ' on' : '') + '" data-pick="' + k + '">' +
+          dishIcon(k, 18) + '<span>' + esc(d.short || d.name) + '</span>' +
+          '<span class="pr">' + yen(d.price) + '</span></button>';
+      }).join('') +
+    '</div>' +
+    '<div class="slots" id="baskets"></div>' +
+    '<div class="legend" style="margin-top:2px">' +
+      '<span><i class="dot" style="background:var(--raw)"></i>生</span>' +
+      '<span><i class="dot" style="background:var(--yellow)"></i>炸制中</span>' +
+      '<span><i class="dot" style="background:var(--red)"></i>该抖篮</span>' +
+      '<span><i class="dot" style="background:#3E8E42"></i>可捞</span>' +
+      '<span><i class="dot" style="background:var(--burnt)"></i>焦</span>' +
+    '</div>';
+
+  var box = el('baskets');
+  for(var i = 0; i < BASKET.slots; i++){
+    var d = document.createElement('div');
+    d.className = 'slot idle';
+    d.setAttribute('data-bs', String(i));
+    d.innerHTML =
+      '<div class="slotnm"></div><div class="slotbig"></div>' +
+      '<div class="frywrap bskwrap"></div>' +
+      '<div class="lbl">空</div>' +
+      '<div class="bar">' +
+        '<i class="zone" style="left:' + (BASKET.shakeFrom*100) + '%;width:' + ((BASKET.shakeTo-BASKET.shakeFrom)*100) + '%;background:rgba(218,41,28,.16)"></i>' +
+        '<i class="zone" style="left:' + (BASKET.rawUntil*100) + '%;width:' + ((1-BASKET.rawUntil)*100) + '%"></i>' +
+        '<i class="fill"></i></div>' +
+      '<div class="lbl2">从上面选品</div>';
+    box.appendChild(d);
+  }
+}
+function paintBasket(){
+  for(var i = 0; i < S.baskets.length; i++){
+    var s = S.baskets[i];
+    var node = app.querySelector('[data-bs="' + i + '"]');
+    if(!node) continue;
+    var ratio = s.st === 'burnt' ? 1 : clamp(s.t / BASKET.ms, 0, 1);
+    var fill = node.querySelector('.fill');
+    if(fill) fill.style.width = (ratio * 100) + '%';
+    var wrap = node.querySelector('.frywrap');
+    var nm = s.code && DISH[s.code] ? (DISH[s.code].short || '') : '';
+
+    // 图标只在状态/选品变化时重建，别每帧 innerHTML
+    var wrapSig = (s.st === 'idle' ? 'idle' : s.code + '|' + s.st);
+    if(wrap && wrap._sig !== wrapSig){
+      wrap._sig = wrapSig;
+      wrap.innerHTML = s.st === 'idle' ? '' :
+        [0,1,2,3].map(function(i){
+          return '<i style="display:block;transform:translateY(' + (i % 2 ? -7 : 0) + 'px)">' +
+            dishIcon(s.code, 40) + '</i>';
+        }).join('');
+    }
+    if(wrap) wrap.style.opacity = (s.st === 'idle') ? '0.26' : '1';
+
+    // 炸物颜色跟着走一档，生→金黄→焦
+    var icons = node.querySelectorAll('.frywrap svg');
+    var tint = s.st === 'burnt' ? 0.42 : (s.st === 'frying' && ratio >= BASKET.rawUntil ? 1 : 0.88);
+    for(var k = 0; k < icons.length; k++) icons[k].style.opacity = String(tint);
+
+    var snm = node.querySelector('.slotnm'), sbig = node.querySelector('.slotbig');
+    var lbl = node.querySelector('.lbl'), lbl2 = node.querySelector('.lbl2');
+    var cls = 'slot';
+    if(snm) snm.textContent = (s.st === 'idle') ? '' : nm;
+
+    if(s.st === 'idle'){
+      cls += ' idle';
+      if(sbig) sbig.textContent = '点一下下料';
+      if(lbl) lbl.textContent = '空';
+      if(lbl2) lbl2.textContent = '从上面选品';
+    } else if(s.st === 'frying'){
+      if(!s.shook && ratio >= BASKET.shakeFrom && ratio < BASKET.shakeTo){
+        cls += ' shake';
+        if(sbig) sbig.textContent = '抖篮！';
+        if(lbl) lbl.textContent = '要粘连了';
+        if(lbl2) lbl2.textContent = nm + ' · 点一下抖开';
+      } else if(ratio < BASKET.rawUntil){
+        cls += ' frying';
+        if(sbig) sbig.textContent = ((BASKET.ms - s.t) / 1000).toFixed(1) + 's';
+        if(lbl) lbl.textContent = nm + (s.shook ? ' 已抖' : ' 未抖');
+        if(lbl2) lbl2.textContent = s.shook ? '等绿区' : '还没定型';
+      } else {
+        cls += ' ready';
+        if(sbig) sbig.textContent = '捞出';
+        if(lbl) lbl.textContent = '可以捞！';
+        if(lbl2) lbl2.textContent = nm + (s.shook ? ' · 抖过了' : ' · 没抖，粘连');
+      }
+    } else {
+      cls += ' burnt';
+      if(sbig) sbig.textContent = '焦';
+      if(lbl) lbl.textContent = '焦了';
+      if(lbl2) lbl2.textContent = nm + ' · 点一下清篮';
+    }
+    if(node.className !== cls) node.className = cls;
+  }
+}
+function fireBasket(code){
+  var d = DISH[code];
+  if(!d) return;
+  var idx = -1;
+  for(var i = 0; i < S.baskets.length; i++) if(S.baskets[i].st === 'idle'){ idx = i; break; }
+  if(idx < 0){ toast('两个炸篮都在忙'); sfxBad(); return; }
+  if(S.cash < d.cost){ toast('现金不够进货了'); sfxBad(); return; }
+  S.cash -= d.cost; S.stats.cost += d.cost;
+  S.baskets[idx].st = 'frying';
+  S.baskets[idx].t = 0;
+  S.baskets[idx].code = code;
+  S.baskets[idx].shook = false;
+  sfxClick(); paint();
+}
+function clickBasket(i){
+  var s = S.baskets[i]; if(!s) return;
+  if(s.st === 'idle'){ if(picked.basket) fireBasket(picked.basket); return; }
+  if(s.st === 'burnt'){
+    s.st = 'idle'; s.t = 0; s.code = null; s.shook = false;
+    S.stats.burnt++; sfxBad(); paint(); return;
+  }
+  var r = s.t / BASKET.ms;
+  // 抖篮窗口内点一下：抖开，不粘连
+  if(!s.shook && r >= BASKET.shakeFrom && r < BASKET.shakeTo){
+    s.shook = true;
+    sfxGood(); toast('抖开了，不会粘连');
+    paint(); return;
+  }
+  if(r < BASKET.rawUntil){
+    s.st = 'idle'; s.t = 0; s.code = null; s.shook = false;
+    S.stats.wasted++; sfxBad();
+    toast(r < BASKET.shakeFrom ? '还没炸透，扔了' : '来不及抖了，这篮废了');
+    paint(); return;
+  }
+  var lo = BASKET.rawUntil, mid = (lo + 1) / 2;
+  var q = clamp(1 - Math.abs(r - mid) / (mid - lo) * 0.55, 0.1, 1);
+  if(!s.shook) q = Math.min(q, 0.45);          // 没抖篮 → 粘连，卖不上价
+  var code = s.code;
+  s.st = 'idle'; s.t = 0; s.code = null; s.shook = false;
+  putOnShelf(code, q, null);
+  sfxGood(); paint();
+}
+
+/* ── 煎区（两面煎 + 保温盘）── */
+function renderGrill(b){
+  b.innerHTML =
+    '<h3>煎 区 · 两 面 煎</h3>' +
+    '<div class="grillbox" id="grillBox"></div>' +
+    '<div class="warm" id="warmBox"></div>' +
+    '<div class="legend" style="margin-top:2px">' +
+      '<span><i class="dot" style="background:#C98A6A"></i>生</span>' +
+      '<span><i class="dot" style="background:var(--yellow)"></i>第一面</span>' +
+      '<span><i class="dot" style="background:var(--red)"></i>该翻面</span>' +
+      '<span><i class="dot" style="background:#3E8E42"></i>可起锅</span>' +
+      '<span><i class="dot" style="background:var(--burnt)"></i>焦</span>' +
+    '</div>';
+  var box = el('grillBox');
+  for(var i = 0; i < GRILL.slots; i++){
+    var d = document.createElement('div');
+    d.className = 'gr idle';
+    d.setAttribute('data-gr', String(i));
+    d.innerHTML =
+      '<div class="griddle"></div><div class="patty"></div>' +
+      '<div class="grtag"></div><div class="grbig"></div>' +
+      '<div class="bar"><i class="zone" style="left:' + (GRILL.readyAt*100) + '%;width:' + ((1-GRILL.readyAt)*100) + '%"></i><i class="fill"></i></div>' +
+      '<div class="lbl2" style="text-align:center;font-size:9.5px;color:var(--dimmer);margin-top:3px;height:14px"></div>';
+    box.appendChild(d);
+  }
+  paintWarm();
+}
+function paintWarm(){
+  var w = el('warmBox'); if(!w) return;
+  var n = S.patties.length;
+  if(w._n !== n){
+    w._n = n;
+    var h = '<span class="wlbl">保 温 盘</span>';
+    for(var i = 0; i < GRILL.warmCap; i++){
+      var p = S.patties[i];
+      h += '<div class="wc' + (p ? ' has' : '') + '">' +
+        (p ? pattySVG(24) + '<span class="q">' + Math.round(p.q * 100) + '</span>' : '') + '</div>';
+    }
+    h += '<span class="wlbl" style="margin-left:auto">' + n + '/' + GRILL.warmCap + '　组装堡要用</span>';
+    w.innerHTML = h;
+    w._q = [].slice.call(w.querySelectorAll('.wc .q'));
+  }
+  for(var k = 0; k < w._q.length; k++){
+    var it = S.patties[k]; if(!it) continue;
+    var v = String(Math.round(effQ(it) * 100));
+    if(w._q[k].textContent !== v) w._q[k].textContent = v;
+  }
+}
+function paintGrill(){
+  for(var i = 0; i < S.grill.length; i++){
+    var g = S.grill[i];
+    var node = app.querySelector('[data-gr="' + i + '"]');
+    if(!node) continue;
+    var ratio = g.st === 'burnt' ? 1 : clamp(g.t / GRILL.sideMs, 0, 1);
+    var fill = node.querySelector('.fill');
+    if(fill) fill.style.width = (ratio * 100) + '%';
+    var patty = node.querySelector('.patty');
+    var tag = node.querySelector('.grtag'), big = node.querySelector('.grbig');
+    var lbl2 = node.querySelector('.lbl2');
+    var cls = 'gr';
+    if(patty){
+      patty.className = 'patty' + (
+        g.st === 'burnt' ? ' burnt' :
+        g.st === 'idle' ? '' :
+        g.side === 2 ? ' done' :
+        ratio >= GRILL.readyAt ? ' half' : '');
+      patty.style.opacity = g.st === 'idle' ? '0.22' : '1';
+    }
+    if(g.st === 'idle'){
+      cls += ' idle';
+      if(tag) tag.textContent = '';
+      if(big) big.textContent = '点一下放肉饼';
+      if(lbl2) lbl2.textContent = '两面都要煎到绿区';
+    } else if(g.st === 'burnt'){
+      cls += ' burnt';
+      if(tag) tag.textContent = '第 ' + g.side + ' 面';
+      if(big) big.textContent = '焦';
+      if(lbl2) lbl2.textContent = '点一下铲掉';
+    } else {
+      var ready = ratio >= GRILL.readyAt;
+      if(g.side === 1){
+        cls += ready ? ' flip' : ' s1';
+        if(tag) tag.textContent = '第 1 面';
+        if(big) big.textContent = ready ? '翻面！' : ((GRILL.sideMs - g.t) / 1000).toFixed(1) + 's';
+        if(lbl2) lbl2.textContent = ready ? '点一下翻过去' : '还生着';
+      } else {
+        cls += ready ? ' ready' : ' s1';
+        if(tag) tag.textContent = '第 2 面';
+        if(big) big.textContent = ready ? '起锅' : ((GRILL.sideMs - g.t) / 1000).toFixed(1) + 's';
+        if(lbl2) lbl2.textContent = ready ? '点一下放保温盘' : '第二面还生';
+      }
+    }
+    if(node.className !== cls) node.className = cls;
+  }
+  paintWarm();
+}
+function qualityGrill(r){
+  var lo = GRILL.readyAt, mid = (lo + 1) / 2;
+  return clamp(1 - Math.abs(r - mid) / (mid - lo) * 0.55, 0.1, 1);
+}
+function clickGrill(i){
+  var g = S.grill[i]; if(!g) return;
+  if(g.st === 'idle'){
+    g.st = 'cook'; g.t = 0; g.side = 1; g.q1 = 1;
+    sfxClick(); paint(); return;
+  }
+  if(g.st === 'burnt'){
+    g.st = 'idle'; g.t = 0; g.side = 1;
+    S.stats.burnt++; sfxBad(); paint(); return;
+  }
+  var r = g.t / GRILL.sideMs;
+  if(r < GRILL.readyAt){ toast('还没到火候，再煎一会儿'); sfxBad(); return; }
+  if(g.side === 1){
+    g.q1 = qualityGrill(r);
+    g.side = 2; g.t = 0;
+    sfxGood(); toast('翻面');
+    paint(); return;
+  }
+  var q = (g.q1 + qualityGrill(r)) / 2;
+  g.st = 'idle'; g.t = 0; g.side = 1;
+  addPatty(q);
+  sfxGood(); paint();
+}
+function addPatty(q){
+  if(S.patties.length >= GRILL.warmCap){
+    toast('保温盘满了，这块肉饼只能扔');
+    S.stats.wasted++; sfxBad(); return;
+  }
+  S.patties.push({ q: q, born: S.tNow });
+  paintWarm();
+}
+/* 保鲜：出锅 9 秒后开始掉质量 */
+function freshMul(born){
+  var held = S.tNow - (born || 0);
+  if(held <= FRESH.grace) return 1;
+  return clamp(1 - (held - FRESH.grace) / 1000 * FRESH.rate, FRESH.floor, 1);
+}
+function effQ(it){
+  return clamp((it.q || 0) * freshMul(it.born || 0), 0.05, 1);
+}
+
 /* ── 饮料站 ── */
 function renderDrink(b){
   var list = dishesOf('drink');
@@ -1172,6 +1600,9 @@ function activeBuildTicket(){
 }
 function renderAssembly(b){
   var t = activeBuildTicket();
+  var patty = S.patties.length;
+  var pattyBadge = '<span class="pstock' + (patty ? '' : ' out') + '">' + pattySVG(14) +
+    ' 保温盘 ' + patty + '/' + GRILL.warmCap + '</span>';
   if(!t){
     var menuCards = dishesOf('assembly').map(function(k){
       var dd = DISH[k];
@@ -1182,9 +1613,9 @@ function renderAssembly(b){
         '<div class="bv-tp">' + esc((dd.recipe || []).join(' · ') || '不用加料') + '</div>' +
       '</div>';
     }).join('');
-    b.innerHTML = '<h3>组 装 台</h3>' +
+    b.innerHTML = '<h3>组 装 台 ' + pattyBadge + '</h3>' +
       '<div class="asm-void">' +
-        '<div class="idle-note">眼下没有要组装的堡，先去薯条站或饮料站 —— <b>等单的时候可以把配方背一下</b></div>' +
+        '<div class="idle-note">眼下没有要组装的堡 —— <b>空档去煎区备几块肉饼</b>，来单才接得住</div>' +
         '<div class="bv-grid">' + menuCards + '</div>' +
       '</div>';
     return;
@@ -1198,12 +1629,13 @@ function renderAssembly(b){
   need.forEach(function(n){ if(allIngr.indexOf(n) < 0) allIngr.push(n); });
 
   b.innerHTML =
-  '<h3>组 装 台</h3>' +
+  '<h3>组 装 台 ' + pattyBadge + '</h3>' +
   '<div class="asm">' +
     '<div class="asm-left">' +
       '<div class="asm-tag">#' + t.order.no + ' · ' + esc(d.short) + '</div>' +
       '<div class="stack">' +
         '<div class="bun"></div>' +
+        (patty ? '' : '<div class="layer ghost s-cheese" style="border-color:#C98A6A;height:17px"></div>') +
         bd.added.map(function(n){
           var st = toppingStyle(n);
           return '<div class="layer s-' + st.s + '" style="background:' + st.c + '"></div>';
@@ -1215,12 +1647,14 @@ function renderAssembly(b){
         }).join('') +
         (need.length ? '<div class="bun top"></div>' : '') +
       '</div>' +
-      '<div class="asm-cnt">已加 ' + bd.added.length + ' / ' + need.length + ' 层</div>' +
+      '<div class="asm-cnt">已加 ' + bd.added.length + ' / ' + need.length + ' 层' +
+        (patty ? '' : ' · 缺肉饼') + '</div>' +
     '</div>' +
     '<div class="asm-right">' +
       '<div class="asm-ticket">' +
         '<div class="ttl">' + burgerSVG(17) + esc(d.name) + '</div>' +
-        '<div class="sub2">' + (need.length ? '照着单子从上往下加' : '这单不用加料，直接合上出餐') + '</div>' +
+        '<div class="sub2">' + (need.length ? '照着单子从上往下加' : '这单不用加料，直接合上出餐') +
+          (patty ? '' : '　·　<span style="color:var(--red)">保温盘空了，先去煎区</span>') + '</div>' +
         '<div class="need">' +
           need.map(function(n, i){
             var cls = i < bd.added.length ? 'done' : (i === bd.added.length ? 'next' : '');
@@ -1234,8 +1668,9 @@ function renderAssembly(b){
           allIngr.map(function(n){
             return '<button class="ig" data-ig="' + esc(n) + '">' + toppingSVG(n, 16) + esc(n) + '</button>';
           }).join('') +
-          '<button class="ig fin" id="fin"' + (bd.added.length < need.length ? ' disabled' : '') + '>' +
-            '合上出餐' + (need.length ? '（' + bd.added.length + '/' + need.length + '）' : '') +
+          '<button class="ig fin" id="fin"' + (bd.added.length < need.length || !patty ? ' disabled' : '') + '>' +
+            (patty ? '合上出餐' : '先去煎区补肉饼') +
+            (need.length && patty ? '（' + bd.added.length + '/' + need.length + '）' : '') +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -1281,6 +1716,10 @@ function bindStatic(){
     }
     var slot = e.target.closest('[data-slot]');
     if(slot){ clickSlot(+slot.getAttribute('data-slot')); return; }
+    var bs = e.target.closest('[data-bs]');
+    if(bs){ clickBasket(+bs.getAttribute('data-bs')); return; }
+    var gr = e.target.closest('[data-gr]');
+    if(gr){ clickGrill(+gr.getAttribute('data-gr')); return; }
     var ig = e.target.closest('[data-ig]');
     if(ig){ addIngredient(ig.getAttribute('data-ig'), ig); return; }
     if(e.target.closest('#fin')){ finishBurger(); return; }
@@ -1355,7 +1794,7 @@ function clickSlot(i){
 }
 function qualityFries(ratio){
   var lo = FRYER.rawUntil, mid = (lo + 1) / 2;
-  return clamp(1 - Math.abs(ratio - mid) / (mid - lo) * 0.7, 0.1, 1);
+  return clamp(1 - Math.abs(ratio - mid) / (mid - lo) * 0.55, 0.1, 1);
 }
 
 /* ── 饮料 ── */
@@ -1368,7 +1807,7 @@ function finishPour(){
   if(f < DRINK.low){ if(f > 0.04){ S.stats.wasted++; sfxBad(); toast('没打满，倒了'); } return; }
   if(f > DRINK.high){ S.stats.wasted++; sfxBad(); toast('溢出来了'); return; }
   var lo = DRINK.low, hi = DRINK.high, mid = (lo + hi) / 2;
-  var q = clamp(1 - Math.abs(f - mid) / (mid - lo) * 0.7, 0.1, 1);
+  var q = clamp(1 - Math.abs(f - mid) / (mid - lo) * 0.55, 0.1, 1);
   if(code) putOnShelf(code, q, null);
   sfxGood();
 }
@@ -1385,15 +1824,16 @@ function addIngredient(name, node){
     sfxClick();
     renderBench();
     var n = el('fin');
-    if(S.build.added.length === need.length && n) n.disabled = false;
+    // 配料齐了不代表能出餐：煎区没肉饼时按钮必须保持禁用，否则玩家点下去只会空转
+    if(S.build && S.build.added.length === need.length && n && S.patties.length) n.disabled = false;
   } else {
     S.build.errors++;
     sfxBad();
     toast('顺序不对，单子上写着呢');
     if(node){ node.classList.add('shake'); setTimeout(function(){ node.classList.remove('shake'); }, 320); }
-    if(S.build.errors >= 3){
+    if(S.build.errors >= 2){
       S.stats.wasted++;
-      toast('这堡废了，重新来');
+      toast('连错两次，这堡废了，重来');
       S.build = null;
       renderBench();
     }
@@ -1404,8 +1844,15 @@ function finishBurger(){
   if(!t || !S.build) return;
   var need = t.toppings;
   if(S.build.added.length < need.length){ toast('还差配料'); sfxBad(); return; }
-  var q = clamp(1 - S.build.errors * 0.34, 0.1, 1);
+  if(!S.patties.length){ toast('保温盘没肉饼了，先去煎区'); sfxBad(); return; }
+  var d = DISH[t.code];
+  if(d && S.cash < d.cost){ toast('现金不够进货了'); sfxBad(); return; }
+  var topQ = clamp(1 - S.build.errors * 0.34, 0.1, 1);
+  var patty = S.patties.shift();
+  // 堡的质量 = 配料（手稳）+ 肉饼（火候）各占一部分
+  var q = clamp(0.62 * topQ + 0.38 * effQ(patty), 0.05, 1);
   var code = t.code, tp = need.slice();
+  if(d){ S.cash -= d.cost; S.stats.cost += d.cost; }
   S.build = null;
   putOnShelf(code, q, tp);
   sfxGood();
@@ -1420,7 +1867,7 @@ function putOnShelf(code, q, toppings){
     sfxBad();
     return;
   }
-  S.shelf.push({ code: code, q: q, sig: sig(toppings), toppings: toppings || null });
+  S.shelf.push({ code: code, q: q, sig: sig(toppings), toppings: toppings || null, born: S.tNow });
   renderShelf(); paint();
   if(S.tab === 'assembly') renderBench();
 }
@@ -1431,10 +1878,24 @@ function renderShelf(){
     var it = S.shelf[i];
     h += '<div class="sh' + (it ? ' has' : '') + '"' + (it ? ' data-sh="' + i + '"' : '') + '>' +
       (it ? dishIcon(it.code, 22) : '') +
-      (it ? '<span class="q">' + Math.round(it.q * 100) + '</span>' : '') + '</div>';
+      (it ? '<span class="q">' + Math.round(effQ(it) * 100) + '</span>' : '') + '</div>';
   }
   h += '<span class="shelf-note">' + S.shelf.length + '/' + SHELF_CAP + '　点一下丢掉</span>';
   sh.innerHTML = h;
+  paintShelf();
+}
+/* 每帧刷一遍架上的新鲜度角标：凉了的变黄/变红 */
+function paintShelf(){
+  for(var i = 0; i < S.shelf.length; i++){
+    var it = S.shelf[i];
+    var node = app.querySelector('[data-sh="' + i + '"] .q');
+    if(!node) continue;
+    var q = effQ(it);
+    var txt = String(Math.round(q * 100));
+    if(node.textContent !== txt) node.textContent = txt;
+    var col = q >= PERFECT_Q ? COL.green : q >= GOOD_Q ? COL.yellowD : COL.red;
+    if(node._c !== col){ node._c = col; node.style.background = col; }
+  }
 }
 
 /* ── 订单匹配 ── */
@@ -1529,7 +1990,7 @@ function serve(id, x, y){
   o.want.forEach(function(w){
     for(var k = 0; k < S.shelf.length; k++){
       if(S.shelf[k].code === w.code && S.shelf[k].sig === sig(w.toppings)){
-        qSum += S.shelf[k].q; S.shelf.splice(k, 1); break;
+        qSum += effQ(S.shelf[k]); S.shelf.splice(k, 1); break;
       }
     }
   });
@@ -1572,6 +2033,7 @@ function loop(now){
 }
 function update(dt){
   S.timeLeft -= dt;
+  S.tNow += dt;
   if(S.timeLeft <= 0){ endDay(); return; }
 
   for(var i = 0; i < S.slots.length; i++){
@@ -1579,6 +2041,20 @@ function update(dt){
     if(s.st === 'frying'){
       s.t += dt;
       if(s.t >= FRYER.ms){ s.st = 'burnt'; s.t = FRYER.ms; }
+    }
+  }
+  for(var q = 0; q < S.baskets.length; q++){
+    var bs = S.baskets[q];
+    if(bs.st === 'frying'){
+      bs.t += dt;
+      if(bs.t >= BASKET.ms){ bs.st = 'burnt'; bs.t = BASKET.ms; }
+    }
+  }
+  for(var g = 0; g < S.grill.length; g++){
+    var gr = S.grill[g];
+    if(gr.st === 'cook'){
+      gr.t += dt;
+      if(gr.t >= GRILL.sideMs){ gr.st = 'burnt'; gr.t = GRILL.sideMs; }
     }
   }
   if(S.cup.pouring){
@@ -1659,8 +2135,11 @@ function paint(){
   });
 
   paintBadges();
-  if(S.tab === 'fries') paintFries();
-  else if(S.tab === 'drink') paintDrink();
+  paintShelf();
+  if(S.tab === 'fries')       paintFries();
+  else if(S.tab === 'basket') paintBasket();
+  else if(S.tab === 'drink')  paintDrink();
+  else if(S.tab === 'grill')  paintGrill();
 }
 
 function paintFries(){
@@ -1752,17 +2231,19 @@ function paintDrink(){
 function endDay(){
   S.phase = 'dayend';
   var st = S.stats;
-  var rent = ECON.rent || 40;
-  var profit = st.revenue + st.tips - st.cost - rent;
-  S.cash -= rent;
+  var rent = (ECON.rent || 45) + (S.day - 1) * (ECON.rentStep || 0);
+  var lostPay = (st.lost || 0) * (ECON.lostPenalty || 0);
+  st.lostPay = lostPay;
+  var profit = st.revenue + st.tips - st.cost - rent - lostPay;
+  S.cash -= rent + lostPay;
   S.history.push({ day:S.day, revenue:st.revenue, tips:st.tips, cost:st.cost,
-                   rent:rent, profit:profit, cash:S.cash,
+                   rent:rent, lostPay:lostPay, profit:profit, cash:S.cash,
                    served:st.served, lost:st.lost });
   if(S.cash < 0) return renderBankrupt();
-  renderDayEnd(profit, rent);
+  renderDayEnd(profit, rent, lostPay);
 }
 
-function renderDayEnd(profit, rent){
+function renderDayEnd(profit, rent, lostPay){
   var st = S.stats;
   var sold = Object.keys(st.items).reduce(function(a,k){ return a + st.items[k]; }, 0);
   var items = Object.keys(st.items).map(function(k){
@@ -1785,6 +2266,7 @@ function renderDayEnd(profit, rent){
       (st.tips ? '<div class="row"><span class="k">小费</span><span class="v pos">' + yen(st.tips) + '</span></div>' : '') +
       '<div class="row"><span class="k">原料成本</span><span class="v neg">' + signedYen(-st.cost) + '</span></div>' +
       '<div class="row"><span class="k">房租</span><span class="v neg">' + signedYen(-rent) + '</span></div>' +
+      (lostPay ? '<div class="row"><span class="k">跑单赔偿</span><span class="v neg">' + signedYen(-lostPay) + '</span></div>' : '') +
       '<div class="row big"><span class="k">今日净利</span><span class="v ' + (profit >= 0 ? 'pos' : 'neg') + '">' + signedYen(profit) + '</span></div>' +
       '<div class="row"><span class="k">现金余额</span><span class="v">' + yen(S.cash) + '</span></div>' +
     '</div>' +
@@ -1813,13 +2295,14 @@ function renderOver(){
   var total = S.history.reduce(function(a,h){ return a + h.profit; }, 0);
   var served = S.history.reduce(function(a,h){ return a + h.served; }, 0);
   var lost = S.history.reduce(function(a,h){ return a + h.lost; }, 0);
-  var cash = S.cash, base = ECON.startCash || 1200, target = ECON.targetCash || base * 1.35;
+  var cash = S.cash;
+  var G = ECON.grades || { S:1700, A:1500, B:1250, C:1050 };
   var g, note;
-  if(cash >= target)                  { g='S'; note='这店你开出了名堂。'; }
-  else if(cash >= base * 1.22)        { g='A'; note='稳，火候拿得住。'; }
-  else if(cash >= base * 1.06)        { g='B'; note='小赚，路子对了。'; }
-  else if(cash >= base * 0.90)        { g='C'; note='白忙一场，好歹没亏。'; }
-  else                                { g='D'; note='钱少了，手艺还得练。'; }
+  if(cash >= G.S)      { g='S'; note='这店你开出了名堂。'; }
+  else if(cash >= G.A) { g='A'; note='稳，火候拿得住。'; }
+  else if(cash >= G.B) { g='B'; note='小赚，路子对了。'; }
+  else if(cash >= G.C) { g='C'; note='白忙一场，好歹没亏。'; }
+  else                 { g='D'; note='钱少了，手艺还得练。'; }
   var best = S.history.slice().sort(function(a,b){ return b.profit - a.profit; })[0];
 
   app.innerHTML =

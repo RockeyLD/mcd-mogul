@@ -89,7 +89,9 @@ async function callTool(name, args) {
 const MENU = {
   fries: [
     { code: '4810',   nutritionName: '中薯条' },      // 薯条 ¥14.5
-    { code: '514782', nutritionName: '脆脆薯条' },    // 脆脆薯条 ¥16
+    { code: '514782', nutritionName: '脆脆薯条' }     // 脆脆薯条 ¥16
+  ],
+  basket: [
     { code: '1401',   nutritionName: '麦乐鸡5块' },   // 麦乐鸡 ¥14.5
     { code: '1700',   nutritionName: '麦辣鸡翅-2块' } // 麦辣鸡翅 ¥14.5
   ],
@@ -238,17 +240,22 @@ function shortName(name){
     },
     stations: [
       { key: 'fries',    label: '薯条站', kind: 'fryer',    hint: '下锅 → 绿区捞出，过火就焦' },
+      { key: 'basket',   label: '炸物站', kind: 'basket',   hint: '下锅 → 中途抖篮 → 绿区捞出' },
       { key: 'drink',    label: '饮料站', kind: 'pour',     hint: '按住 → 绿区松手，满溢作废' },
-      { key: 'assembly', label: '组装站', kind: 'assemble', hint: '照着单子依序加配料' }
+      { key: 'grill',    label: '煎区',   kind: 'grill',    hint: '两面煎：绿区翻面 → 绿区起锅' },
+      { key: 'assembly', label: '组装站', kind: 'assemble', hint: '要有肉饼，照着单子依序加配料' }
     ],
     dishes: dishes,
     economy: {
       days: 5,
       dayMs: 60000,
-      startCash: 1200,
-      rent: 40,
-      targetCash: 2000,
-      cogsRate: COGS_RATE
+      startCash: 1000,
+      rent: 45,
+      rentStep: 15,
+      cogsRate: COGS_RATE,
+      lostPenalty: 9,
+      // 评级线：按五工位版本的实测区间标定（见 BALANCE.md），不是拍脑袋的倍数
+      grades: { S: 1700, A: 1500, B: 1250, C: 1050 }
     }
   };
 

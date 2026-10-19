@@ -56,28 +56,48 @@ python3 -m http.server 8000 --directory game
 
 | 常量 | 默认 | 含义 |
 |---|---|---|
-| `FRYER.ms` | 3800 | 一份薯条的熟成总时长（毫秒） |
+| `FRYER.ms` | 3300 | 一份薯条的熟成总时长（毫秒） |
 | `FRYER.slots` | 3 | 油槽数量 |
-| `FRYER.rawUntil` | 0.55 | 生→可捞的分界（绿区起点） |
-| `DRINK.ms` | 1900 | 注满一杯的时长 |
-| `DRINK.low` / `DRINK.high` | 0.66 / 0.94 | 饮料绿区上下线 |
+| `FRYER.rawUntil` | 0.60 | 生→可捞的分界（绿区起点） |
+| `BASKET.ms` | 3400 | 一篮炸物到炸糊的时长 |
+| `BASKET.shakeFrom` / `shakeTo` | 0.42 / 0.68 | 抖篮窗口；错过粘连（质量封顶 0.45） |
+| `GRILL.sideMs` | 2500 | 肉饼单面煎制时长 |
+| `GRILL.readyAt` | 0.58 | 单面可翻面 / 可起锅的进度 |
+| `GRILL.warmCap` | 4 | 保温盘（组装堡必须消耗一块） |
+| `FRESH.grace` / `rate` / `floor` | 10000 / 0.05 / 0.55 | 出餐架保鲜：10 秒后每秒掉 5% |
+| `DRINK.ms` | 1650 | 注满一杯的时长 |
+| `DRINK.low` / `DRINK.high` | 0.70 / 0.93 | 饮料绿区上下线 |
 | `PERFECT_Q` / `GOOD_Q` | 0.85 / 0.55 | 完美 / 良好的质量分界线 |
-| `SHELF_CAP` | 9 | 出餐架格数 |
-| `MAX_ORDERS` | 6 | 同时在排的订单上限 |
+| `SHELF_CAP` | 8 | 出餐架格数 |
+| `MAX_ORDERS` | 7 | 同时在排的订单上限 |
 | `ECON.dayMs` | 60000 | 一天多少毫秒 |
 
-经济学参数在 `data/snapshot.json` 的 `economy` 里（`days` / `startCash` / `rent` / `targetCash`）。
+经济学参数在 `data/snapshot.json` 的 `economy` 里（`days` / `startCash` / `rent` / `rentStep` / `lostPenalty` / `grades`）。
+客流与耐心在 `dayCfg()` 里随天数递减。
 
 改完必须**真的跑一遍**再告诉用户"好了"。至少验证：
 
 ```bash
+# 1) 语法过得去
 node -e "const h=require('fs').readFileSync('game/index.html','utf8');new Function(h.match(/<script>([\s\S]*)<\/script>\s*<\/body>/)[1]);console.log('JS OK')"
+
+# 2) 机器人跑完整 5 天，看服务率 / 评级 / 现金守恒
+NODE_PATH=~/.workbuddy/binaries/node/workspace/node_modules \
+  node tools/harness.js game/index.html smart 16 80000
 ```
+
+判据：`smart` 落在 A 线附近（1500~1700）、服务率 90%±、现金守恒误差 ≤ ¥4；`dumb` 应该很快破产。
 
 ## 加一道新菜
 
-数据侧：在 `tools/pull-mcp.js` 的 `MENU` 里加一条 `{ code, nutritionName }`，重跑脚本。
+数据侧：在 `tools/pull-mcp.js` 的 `MENU` 里加一条 `{ code, nutritionName }`（注意放在对应的工位数组里：`fries` / `basket` / `drink` / `assembly`），重跑脚本。
 游戏侧：不用改。新菜会按 `station` 自动出现在对应工位的选品条里；如果它属于 `assembly`，还需要在 `TOPPING_STYLE` 里给它用到的每种配料补一个颜色和形状。
+
+## 加工位
+
+`game/index.html` 里的 `STATIONS` 是工位注册表：tab、角标、调度全走它。
+加一座站 = 在表里加一行 + 写一个 `renderXxx()` 和一个 `paintXxx()`，再在两个分发函数里补一个分支。
+**别把工位逻辑写死在 `renderTabs` / `paint` 里**——那是三工位版的老写法。
 
 ## 边界
 
