@@ -106,7 +106,9 @@ if [ "$DRY" = "1" ]; then
 else
   # 先走正常 git 协议；github.com:443 被墙/被掐时（沙箱里就是 502）改走 REST API。
   # 两条路的 commit sha 完全一致，不存在分叉，随时可以换回来。
-  _gh=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://github.com 2>/dev/null || echo 000)
+  : > /tmp/mcd_push_err                                   # 别读到上一轮留下的旧报错
+  _gh=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://github.com 2>/dev/null)
+  _gh=${_gh:-000}                                         # 连不上时 curl 只输出 000，别再追加一个
   if [ "$_gh" != "200" ]; then
     printf '  \033[33m!\033[0m github.com 不通（HTTP %s）→ 直接用 REST API\n' "$_gh"
     _push_ok=1
@@ -126,8 +128,10 @@ else
   fi
   git remote set-url origin "https://github.com/$OWNER/$REPO.git" 2>/dev/null || \
     git remote add origin "https://github.com/$OWNER/$REPO.git"
+  # git 协议不通就 fetch 不了，跟踪分支得手动对齐；API 推送的 sha 与本地一致，直接指过去
+  git update-ref "refs/remotes/origin/$BRANCH" "$(git rev-parse HEAD)"
   git branch --quiet --set-upstream-to="origin/$BRANCH" "$BRANCH" 2>/dev/null || true
-  ok "origin 已指回无 Token 的地址"
+  ok "origin 已指回无 Token 的地址，跟踪分支对齐到 $(git rev-parse --short HEAD)"
 fi
 
 # ── 3. 开 Pages ───────────────────────────────────────────────
