@@ -4,6 +4,8 @@ package-lock.json
 
 # 绝对不要提交的东西：真实 Token
 tools/.mcd-token
+tools/.github-token
+.github-token
 .mcd-token
 mcp.json
 *.local.json

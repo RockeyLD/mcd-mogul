@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 # 麦麦大亨 · 一键发布：建仓库 → 推代码 → 开 GitHub Pages
 #
-# 用法：
-#   export GITHUB_TOKEN=ghp_xxxxxxxx        # 需要 repo 权限（classic 勾 repo，或 fine-grained 给 repo 的 Contents+Pages 读写）
-#   bash tools/publish.sh
+# 用法（三种给 Token 的方式，任选一种）：
+#   1) 写文件（推荐，Token 不会出现在任何命令记录里，也不会进聊天）
+#        echo 'ghp_xxxxxxxx' > tools/.github-token && chmod 600 tools/.github-token
+#        bash tools/publish.sh
+#   2) 环境变量
+#        export GITHUB_TOKEN=ghp_xxxxxxxx && bash tools/publish.sh
+#   3) 只想看它会做什么、不动线上
+#        bash tools/publish.sh --dry-run
 #
-# 干跑（只看要做什么，不动线上）：
-#   bash tools/publish.sh --dry-run
-#
-# 说明：Token 只在命令行里出现一次，不会被写进 .git/config，也不会进仓库。
+# Token 权限：classic 勾 repo；fine-grained 给 Contents 读写 + Pages 读写。
+# 说明：Token 只在 curl/git 的命令行里出现一次，不会写进 .git/config，也不会进仓库
+#      （tools/.github-token 已在 .gitignore 里）。
 
 set -euo pipefail
 
@@ -34,8 +38,18 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 ok "工作区干净"
 
+# Token：环境变量优先，其次读 tools/.github-token
+TOKEN_FILE="tools/.github-token"
+if [ -z "${GITHUB_TOKEN:-}" ] && [ -f "$TOKEN_FILE" ]; then
+  GITHUB_TOKEN="$(tr -d ' \t\r\n' < "$TOKEN_FILE")"
+  ok "已从 $TOKEN_FILE 读到 Token"
+fi
+
 if [ "$DRY" = "0" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-  bad "没设 GITHUB_TOKEN。先 export GITHUB_TOKEN=ghp_xxx，或加 --dry-run 只看流程"
+  bad "没有 Token。二选一："
+  echo "      echo 'ghp_xxx' > $TOKEN_FILE && chmod 600 $TOKEN_FILE"
+  echo "      export GITHUB_TOKEN=ghp_xxx"
+  echo "   只想看流程就加 --dry-run"
   exit 1
 fi
 
