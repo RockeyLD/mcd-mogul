@@ -25,3 +25,6 @@ shots/
 
 # 本地 agent 工作记录，不进公开仓库
 .workbuddy/
+
+# 报名/发布用的本地笔记（含 Token 用法说明，不给评审看）
+SUBMIT.local.md
