@@ -50,7 +50,7 @@ if [ "$_code" = "200" ]; then
   EXISTS=1
   ok "仓库已存在，跳过创建"
 else
-  ok "仓库不存在（$ 回答 $_code），准备创建"
+  ok "仓库不存在（HTTP ${_code}），准备创建"
 fi
 
 if [ "$EXISTS" = "0" ]; then
