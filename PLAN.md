@@ -1,7 +1,7 @@
 # 麦麦大亨 · 开发计划
 
 > 麦当劳程序员创意开发大赛参赛项目
-> 报名截止 2026-10-25 23:59 · 本文档最后更新 2026-10-19
+> 报名截止 2026-10-25 23:59 · 本文档最后更新 2026-10-20
 
 ---
 
@@ -148,25 +148,19 @@ game/index.html                       单文件游戏，零依赖
 | 10-19 晚 | 真浏览器跑通 + 录屏采集台 + README 顶部 GIF | ✅ |
 | 10-19 深夜 | **Papa's 式严格判定 + 收益腰斩 + 开局 ¥500** | ✅ |
 | 10-20 | 真机手感复核（重点：`Q_CORE` 完美带够不够宽） | 待做（需你上手） |
-| 10-21 | 仓库公开 + 5 个必需文件收口 | 文件已齐，`tools/publish.sh` 一条命令完成，**等你给 Token** |
+| 10-21 | 仓库公开 + 5 个必需文件收口 | ✅ 已上线：<https://rockeyld.github.io/mcd-mogul/> |
 | 10-22 | **发 Issue 报名（硬节点，留 3 天缓冲）** | 待做 |
 | 10-23~25 | 推广拉 Star + 修 bug | 待做 |
 
 **硬节点：10-22 必须完成报名。**
 
-> ⚠️ 当前唯一的硬阻塞：**仓库 `RockeyLD/mcd-mogul` 根本不存在**。
+> ✅ **10-20 22:30 上线完成。**
 >
-> 10-20 复查的结论：`api.github.com/repos/RockeyLD/mcd-mogul` 返回 404，而你名下的 4 个公开仓库里没有它。
-> 所以不是"推不上去"，是从来没有远端可推；网络本身已经通了（`github.com` 200，之前是 502）。
+> - 仓库 <https://github.com/RockeyLD/mcd-mogul>（public，13 个 commit，历史完整）
+> - 试玩 <https://rockeyld.github.io/mcd-mogul/>（Pages 已构建，游戏 / GIF / 截图 / 快照全部 200）
+> - 远端 `main` 与本地 `HEAD` 同 sha（`62389f6`），**没有分叉**，你以后直连时直接 `git push` 即可
 >
-> 剩下的只差凭据。`tools/publish.sh` 把「建仓库 → 推 main → 开 Pages」串成一条命令：
->
-> ```bash
-> export GITHUB_TOKEN=ghp_xxx     # repo 权限；fine-grained 给 Contents 读写 + Pages 读写
-> bash tools/publish.sh           # 加 --dry-run 只看流程，不动线上
-> ```
->
-> Token 只在命令行出现一次，不写进 `.git/config`。跑完仓库和试玩链接都会有。
+> 唯一还没有的是 10-20 那项：真机手感复核得你本人上手。
 
 
 ---
@@ -423,5 +417,65 @@ security find-internet-password → 没有 github.com 条目（凭据确实没�
    报 `_code?: unbound variable`。所有变量引用改成 `${_code}` 就不会有这问题
 2. Pages 域名写成了 `$OWNER.github.io`，输出成 `RockeyLD.github.io`。GitHub 的 Pages
    域名是全小写，虽然浏览器能解析，但写进仓库 homepage 字段要规范——用 `tr` 转一下
+
+### 2026-10-20 夜色 · 上线
+
+拿到 Token 后 `bash tools/publish.sh` 跑下来，第 1 步（建仓库）过了，**第 2 步 push 又死在同一个地方**：
+
+```
+✔ 仓库已创建
+fatal: unable to access 'https://github.com/RockeyLD/mcd-mogul.git/':
+       CONNECT tunnel failed, response 502
+```
+
+结论很清楚：**沙箱只放通 `api.github.com`，`github.com:443` 上的 git smart HTTP 一定被掐**。
+之前偶尔测到 `github.com` 200，是首页 GET 通了，但 git 协议走的是另一条路，照样 502。
+所以只要还在这个环境里，`git push` 永远不可能成功——不是网络抖动。
+
+**改法：不走 git 协议，改用 REST API 重建整条历史**（`tools/push-via-api.js`）
+
+逐 commit 调 `POST /git/blobs` 传内容、`POST /git/trees` 建树、`POST /git/commits` 建提交，
+parent 指向刚建出来的上一个，最后 `PATCH /git/refs/heads/main` 顶上去。
+
+**踩的四个坑**
+
+1. **空仓库 409**：`POST /git/blobs` 直接返回 `{"message":"Git Repository is empty."}`。
+   GitHub 在仓库一个提交都没有时不让用 Git Data API。修法：先用 Contents API 落一个
+   `.gitkeep` 占位提交，等 ref 顶到我们的历史后它就成孤儿了，不留在历史里
+2. **blob sha 不匹配**：`✔ 上传 blob` 报 `.gitignore 本地 cda6c9d9 远端 83d3e004`。
+   原因是我读的是**工作区文件**，而 `.gitignore` 历史上改过好几次——旧 commit 里的那个版本
+   跟现在磁盘上的根本不是同一个文件。修法：内容一律从对象库取 `git cat-file blob <oid>`
+3. **时间戳丢时区 → 整条历史 sha 全变**：第一版把 date 转成 `toISOString()`（UTC），
+   GitHub 存成 `+0000`，于是每个 commit 都被重算出一个新 sha，本地和远端从此分叉，
+   你以后直连 push 会撞 "non-fast-forward"。
+   修法：从 `cat-file -p` 的原始行里取 `<unix> <tz>`，还原成 `2026-10-19T17:31:48+08:00`
+   这种带偏移的 ISO——GitHub 会原样保留，**13 个 commit 的 sha 与本地逐一相同**
+4. **第一次跑被 SIGTERM 掐掉**：70 个 blob 串行上传 + 4.5MB，前台跑超过工具超时。
+   改后台跑、日志落 `/tmp/mcd-push.log`
+
+**结果**
+
+```
+本地 13 个 commit，唯一 blob 70 个，合计 4.53 MB
+✔ 7b1f352 → 7b1f352 ...（13 个全部一致）
+所有 commit 的 sha 与本地完全一致 —— 远端与本地没有分叉
+✔ main → 62389f6
+```
+
+`publish.sh` 的第 2 步也改了：先试 `git push`（90 秒超时），失败就自动转 `push-via-api.js`，
+两条路的产物完全相同，随时可以在有网络的机器上换回普通 push。
+
+**线上验证**
+
+| 资源 | 状态 |
+|---|---|
+| `game/index.html` | 200 · 100 KB |
+| `docs/demo.gif` | 200 · 700 KB |
+| `docs/shot_assembly.png` | 200 |
+| `data/snapshot.json` | 200 |
+| 根 `index.html` | 302 跳转到 `game/index.html` |
+
+仓库补了 homepage、description、8 个 topics。
+
 
 

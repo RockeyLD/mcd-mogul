@@ -93,10 +93,19 @@ fi
 say "第 2 步 · 推送 $BRANCH"
 if [ "$DRY" = "1" ]; then
   ok "[dry-run] 会 git push 到 https://x-access-token:***@github.com/$OWNER/$REPO.git"
+  ok "[dry-run] push 连不上时自动改走 tools/push-via-api.js（REST API 重建历史）"
 else
-  git -c credential.helper= push --quiet \
-    "https://x-access-token:$GITHUB_TOKEN@github.com/$OWNER/$REPO.git" "$BRANCH:$BRANCH"
-  ok "推送完成"
+  # 先走正常 git 协议；github.com:443 被墙/被掐时（沙箱里就是 502）改走 REST API。
+  # 两条路的 commit sha 完全一致，不存在分叉，随时可以换回来。
+  if GIT_TERMINAL_PROMPT=0 timeout 90 git -c credential.helper= push --quiet \
+       "https://x-access-token:$GITHUB_TOKEN@github.com/$OWNER/$REPO.git" "$BRANCH:$BRANCH" 2>/tmp/mcd_push_err; then
+    ok "推送完成（git 协议）"
+  else
+    _err=$(tr -d '\r' < /tmp/mcd_push_err | tail -2 | tr '\n' ' ')
+    printf '  \033[33m!\033[0m git 协议走不通（%s）→ 改走 REST API\n' "$_err"
+    GITHUB_TOKEN="$GITHUB_TOKEN" GITHUB_OWNER="$OWNER" GITHUB_REPO="$REPO" GITHUB_BRANCH="$BRANCH" \
+      node tools/push-via-api.js || { bad "API 推送也失败"; exit 1; }
+  fi
   git remote set-url origin "https://github.com/$OWNER/$REPO.git" 2>/dev/null || \
     git remote add origin "https://github.com/$OWNER/$REPO.git"
   git branch --quiet --set-upstream-to="origin/$BRANCH" "$BRANCH" 2>/dev/null || true

@@ -1,5 +1,7 @@
 # 麦麦大亨 · 后厨
 
+**[▶ 在线试玩](https://rockeyld.github.io/mcd-mogul/)** · 单文件 HTML，零依赖，打开就能玩
+
 > 一个用**真实麦当劳菜单**做的后厨做菜游戏。薯条要盯着油锅捞，可乐要按住按钮打到线上，汉堡要照着票子一层一层加料。
 > 参赛项目 · 麦当劳程序员节创意开发大赛 · **非麦当劳官方产品**
 
@@ -230,6 +232,8 @@ node tools/pull-mcp.js --dry
 ├── tools/shoot-gif.js       录屏采集：CDP 驱动无头 Chrome，让机器人真的在玩，逐帧截图
 ├── tools/shoot-shots.js     工位截图：同一套机器人，逐站停下来拍一张（docs 里那几张）
 ├── tools/make-gif.py        把采集到的帧合成 GIF（全局调色板，避免逐帧闪色）
+├── tools/publish.sh         一键发布：建仓库 → 推 main → 开 Pages（gh 连不上时自动走 API）
+├── tools/push-via-api.js    用 REST API 重建历史，绕开被墙的 git 协议
 ├── docs/demo.gif            README 顶部这段真实玩法录屏
 ├── docs/                    五座工位各一张截图
 ├── SKILL.md                 打包成 WorkBuddy Skill 的说明

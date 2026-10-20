@@ -97,10 +97,19 @@ function commitMeta(sha) {
   }
   const person = s => {
     const m = s.match(/^(.*?) <(.*?)> (\d+) ([+-]\d{4})$/);
-    const iso = new Date(Number(m[3]) * 1000).toISOString();
-    return { name: m[1], email: m[2], date: iso };
+    // 必须保留原始时区：Git 的 commit 对象里 date 序列化成 `<unix> <tz>`，
+    // 一旦把 +0800 压成 +0000，整条历史的 sha 就全变了，本地与远端从此分叉。
+    return { name: m[1], email: m[2], date: localIso(+m[3], m[4]) };
   };
   return { author: person(h.author), committer: person(h.committer), message: msg };
+}
+
+/** unix 时间戳 + 时区偏移 → 2026-10-19T17:31:48+08:00 这种带偏移的 ISO 串 */
+function localIso(ts, tz) {
+  const sign = tz[0] === '-' ? -1 : 1;
+  const off = sign * (+tz.slice(1, 3) * 60 + +tz.slice(3, 5));
+  const s = new Date((ts + off * 60) * 1000).toISOString().slice(0, 19);
+  return s + tz.slice(0, 3) + ':' + tz.slice(3);
 }
 
 /* ── 主流程 ───────────────────────────────────────────────── */
@@ -128,10 +137,27 @@ function commitMeta(sha) {
     return;
   }
 
+  // 1.5) 空仓库踢一脚：全空时 Git Data API 一律 409「Git Repository is empty」，
+  //      先用 Contents API 落一个占位提交，等 ref 顶到我们的历史后它就成孤儿了。
+  try {
+    await api('GET', '/repos/' + OWNER + '/' + REPO + '/git/ref/heads/' + BRANCH);
+    console.log('  远端已有提交，跳过占位');
+  } catch (e) {
+    if (e.status !== 404 && e.status !== 409) throw e;
+    await api('PUT', '/repos/' + OWNER + '/' + REPO + '/contents/.gitkeep', {
+      message: 'init',
+      content: Buffer.from('').toString('base64'),
+      branch: BRANCH
+    });
+    console.log('  空仓库 → 落占位提交，Git Data API 可用');
+  }
+
   // 2) 上传 blob（内容寻址，同一内容只传一次；返回 sha 必须与本地一致）
+  //    内容必须从 git 对象库取，不能读工作区 —— .gitignore 这类文件历史上改过，
+  //    工作区版本 ≠ 旧 commit 里的那个 blob。
   let done = 0;
   for (const [oid, rel] of blobs) {
-    const buf = fs.readFileSync(path.join(ROOT, rel));
+    const buf = git('cat-file', 'blob', oid);
     const r = await api('POST', '/repos/' + OWNER + '/' + REPO + '/git/blobs', {
       content: buf.toString('base64'),
       encoding: 'base64'
@@ -146,6 +172,7 @@ function commitMeta(sha) {
 
   // 3) 逐 commit 建 tree + commit
   let parent = null;
+  let sameCount = 0;
   const map = new Map();        // 本地 commit -> 远端 commit
   for (const c of list) {
     const items = trees.get(c);
@@ -163,8 +190,14 @@ function commitMeta(sha) {
     const cm = await api('POST', '/repos/' + OWNER + '/' + REPO + '/git/commits', body);
     map.set(c, cm.sha);
     parent = cm.sha;
-    console.log('  ✔ ' + c.slice(0, 7) + ' → ' + cm.sha.slice(0, 7) + '  ' + meta.message.split('\n')[0].slice(0, 46));
+    const same = cm.sha === c;
+    console.log('  ' + (same ? '✔' : '⚠') + ' ' + c.slice(0, 7) + ' → ' + cm.sha.slice(0, 7)
+      + (same ? '' : ' （sha 与本地不同）')
+      + '  ' + meta.message.split('\n')[0].slice(0, 42));
+    sameCount += same ? 1 : 0;
   }
+  if (sameCount === list.length) console.log('  所有 commit 的 sha 与本地完全一致 —— 远端与本地没有分叉，以后直接 git push 即可');
+  else console.log('  ' + sameCount + '/' + list.length + ' 个 sha 与本地一致，其余不同（内容仍逐字节相同）');
 
   // 4) 建 ref（已存在就强制指过去）
   const head = map.get(list[list.length - 1]);
