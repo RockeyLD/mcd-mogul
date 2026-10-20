@@ -45,7 +45,12 @@ ok "本地 $BRANCH 在 $LOCAL_HEAD"
 # ── 1. 建仓库（已存在就跳过）──────────────────────────────────
 say "第 1 步 · 建仓库 $OWNER/$REPO"
 EXISTS=0
-_code=$(curl -s -o /tmp/mcd_repo.json -w '%{http_code}' -H "Authorization: Bearer ${GITHUB_TOKEN:-}" "$API/repos/$OWNER/$REPO")
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+  ok "未设 Token，跳过探测（真实运行时这里会查一次仓库是否已存在）"
+  _code="skip"
+else
+  _code=$(curl -s -o /tmp/mcd_repo.json -w '%{http_code}' -H "Authorization: Bearer $GITHUB_TOKEN" "$API/repos/$OWNER/$REPO")
+fi
 if [ "$_code" = "200" ]; then
   EXISTS=1
   ok "仓库已存在，跳过创建"
@@ -61,7 +66,7 @@ if [ "$EXISTS" = "0" ]; then
       -H "Authorization: Bearer $GITHUB_TOKEN" \
       -H "Accept: application/vnd.github+json" \
       "$API/user/repos" \
-      -d "{\"name\":\"$REPO\",\"description\":\"用真实麦当劳 MCP 数据做的后厨做菜游戏 · 麦当劳程序员节创意开发大赛参赛作品\",\"homepage\":\"https://$OWNER.github.io/$REPO/\",\"private\":false,\"has_issues\":true,\"has_wiki\":false,\"auto_init\":false}")
+      -d "{\"name\":\"$REPO\",\"description\":\"用真实麦当劳 MCP 数据做的后厨做菜游戏 · 麦当劳程序员节创意开发大赛参赛作品\",\"homepage\":\"https://$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]').github.io/$REPO/\",\"private\":false,\"has_issues\":true,\"has_wiki\":false,\"auto_init\":false}")
     case "$_code" in
       201) ok "仓库已创建" ;;
       422) ok "同名仓库已存在（当作已创建）" ;;
@@ -104,8 +109,9 @@ fi
 
 # ── 4. 收尾 ───────────────────────────────────────────────────
 say "完成"
+OWNER_LC="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
 echo "  仓库   https://github.com/$OWNER/$REPO"
-echo "  试玩   https://$OWNER.github.io/$REPO/    （Pages 首次构建要 1~2 分钟）"
+echo "  试玩   https://$OWNER_LC.github.io/$REPO/    （Pages 首次构建要 1~2 分钟）"
 echo
 echo "  接下来手动做两件事："
 echo "    1) 仓库 About 右侧钩上 Use your GitHub Pages website"
