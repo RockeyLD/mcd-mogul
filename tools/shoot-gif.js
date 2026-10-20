@@ -21,6 +21,8 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const PORT = 9333;
 const PROFILE = '/tmp/mcd-cdp-profile';
 const GAME = path.join(ROOT, 'game', 'index.html');
+// 默认玩本地文件；设 GAME_URL 可以直接对着线上跑一遍（发布后自检用）
+const GAME_URL = process.env.GAME_URL || ('file://' + GAME);
 
 /* 每次采集写到一个新的时间戳目录，不删旧帧——
    一是省掉清目录的批量删除，二是想重做上一条可以直接拿旧帧重合成。 */
@@ -249,7 +251,7 @@ async function main() {
     width: W, height: H, deviceScaleFactor: 1, mobile: false
   });
 
-  await cdp.send('Page.navigate', { url: 'file://' + GAME });
+  await cdp.send('Page.navigate', { url: GAME_URL });
   await sleep(1800);
 
   // 注入机器人
