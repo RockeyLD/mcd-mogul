@@ -107,8 +107,12 @@ else
   # 先走正常 git 协议；github.com:443 被墙/被掐时（沙箱里就是 502）改走 REST API。
   # 两条路的 commit sha 完全一致，不存在分叉，随时可以换回来。
   : > /tmp/mcd_push_err                                   # 别读到上一轮留下的旧报错
-  _gh=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://github.com 2>/dev/null)
-  _gh=${_gh:-000}                                         # 连不上时 curl 只输出 000，别再追加一个
+  # set -e 下 `A=$(curl ...)` 会因为 curl 超时退出码 28 把整个脚本带走，
+  # 所以必须写成 `A=$(...) || A=000` —— 这样整条语句的退出码是 0。
+  # curl 连不上时 -w 本身已输出 000，别再追加一次，否则会看到 HTTP 000000。
+  _gh=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://github.com 2>/dev/null) || _gh=000
+  _gh=${_gh:-000}
+  _gh=$(printf '%s' "$_gh" | tail -c 3)                   # 防御：只留最后三位
   if [ "$_gh" != "200" ]; then
     printf '  \033[33m!\033[0m github.com 不通（HTTP %s）→ 直接用 REST API\n' "$_gh"
     _push_ok=1
