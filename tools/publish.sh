@@ -46,16 +46,16 @@ ok "本地 $BRANCH 在 $LOCAL_HEAD"
 say "第 1 步 · 建仓库 $OWNER/$REPO"
 EXISTS=0
 if [ -z "${GITHUB_TOKEN:-}" ]; then
-  ok "未设 Token，跳过探测（真实运行时这里会查一次仓库是否已存在）"
+  ok "未设 Token，跳过探测（真实运行时会先查一次仓库在不在）"
   _code="skip"
 else
   _code=$(curl -s -o /tmp/mcd_repo.json -w '%{http_code}' -H "Authorization: Bearer $GITHUB_TOKEN" "$API/repos/$OWNER/$REPO")
-fi
-if [ "$_code" = "200" ]; then
-  EXISTS=1
-  ok "仓库已存在，跳过创建"
-else
-  ok "仓库不存在（HTTP ${_code}），准备创建"
+  if [ "$_code" = "200" ]; then
+    EXISTS=1
+    ok "仓库已存在，跳过创建"
+  else
+    ok "仓库不存在（HTTP ${_code}），准备创建"
+  fi
 fi
 
 if [ "$EXISTS" = "0" ]; then
