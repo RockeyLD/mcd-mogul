@@ -452,6 +452,12 @@ parent 指向刚建出来的上一个，最后 `PATCH /git/refs/heads/main` 顶�
    这种带偏移的 ISO——GitHub 会原样保留，**13 个 commit 的 sha 与本地逐一相同**
 4. **第一次跑被 SIGTERM 掐掉**：70 个 blob 串行上传 + 4.5MB，前台跑超过工具超时。
    改后台跑、日志落 `/tmp/mcd-push.log`
+5. **macOS 没有 `timeout` 命令**：`publish.sh` 里写的 `timeout 90 git push` 直接报
+   `timeout: command not found`。虽然碰巧因为命令失败而落进了兜底分支，但那是假的——
+   在真的网络挂住时它根本不会中断。改成 `sh_timeout()`：有 GNU coreutils 用 `timeout`，
+   有 `gtimeout` 用 `gtimeout`，都没有就用 `perl -e 'alarm shift; exec @ARGV'`（macOS 自带 perl）
+6. **API 请求没有超时**：`fetch` 不设 `AbortSignal.timeout()`，一条挂住的连接能把整个脚本
+   无限期吊着（实测有过 45 秒静止不动）。补 120 秒上限
 
 **结果**
 

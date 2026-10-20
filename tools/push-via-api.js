@@ -38,6 +38,7 @@ async function api(method, p, body, tries = 4) {
     try {
       res = await fetch(url, {
         method,
+        signal: AbortSignal.timeout(120000),   // 不设超时的话，一次卡住的连接能把整个脚本挂死
         headers: {
           Authorization: 'Bearer ' + TOK,
           Accept: 'application/vnd.github+json',

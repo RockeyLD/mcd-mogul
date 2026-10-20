@@ -29,6 +29,15 @@ say() { printf '\n\033[1m▸ %s\033[0m\n' "$*"; }
 ok()  { printf '  \033[32m✔\033[0m %s\n' "$*"; }
 bad() { printf '  \033[31m✘\033[0m %s\n' "$*" >&2; }
 
+# macOS 自带的不是 GNU coreutils，没有 timeout；perl 一定有
+sh_timeout() {
+  local secs=$1; shift
+  if command -v timeout >/dev/null 2>&1; then timeout "$secs" "$@"
+  elif command -v gtimeout >/dev/null 2>&1; then gtimeout "$secs" "$@"
+  else perl -e 'alarm shift; exec @ARGV' "$secs" "$@"
+  fi
+}
+
 # ── 0. 前置检查 ────────────────────────────────────────────────
 say "前置检查"
 if [ -n "$(git status --porcelain)" ]; then
@@ -97,12 +106,21 @@ if [ "$DRY" = "1" ]; then
 else
   # 先走正常 git 协议；github.com:443 被墙/被掐时（沙箱里就是 502）改走 REST API。
   # 两条路的 commit sha 完全一致，不存在分叉，随时可以换回来。
-  if GIT_TERMINAL_PROMPT=0 timeout 90 git -c credential.helper= push --quiet \
+  _gh=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://github.com 2>/dev/null || echo 000)
+  if [ "$_gh" != "200" ]; then
+    printf '  \033[33m!\033[0m github.com 不通（HTTP %s）→ 直接用 REST API\n' "$_gh"
+    _push_ok=1
+  elif sh_timeout 90 git -c credential.helper= push --quiet \
        "https://x-access-token:$GITHUB_TOKEN@github.com/$OWNER/$REPO.git" "$BRANCH:$BRANCH" 2>/tmp/mcd_push_err; then
     ok "推送完成（git 协议）"
+    _push_ok=0
   else
-    _err=$(tr -d '\r' < /tmp/mcd_push_err | tail -2 | tr '\n' ' ')
-    printf '  \033[33m!\033[0m git 协议走不通（%s）→ 改走 REST API\n' "$_err"
+    _push_ok=1
+  fi
+  if [ "$_push_ok" = "1" ]; then
+    if [ -s /tmp/mcd_push_err ]; then
+      printf '  \033[33m!\033[0m git 协议失败（%s）→ 改走 REST API\n' "$(tr -d '\r' < /tmp/mcd_push_err | tail -2 | tr '\n' ' ')"
+    fi
     GITHUB_TOKEN="$GITHUB_TOKEN" GITHUB_OWNER="$OWNER" GITHUB_REPO="$REPO" GITHUB_BRANCH="$BRANCH" \
       node tools/push-via-api.js || { bad "API 推送也失败"; exit 1; }
   fi
