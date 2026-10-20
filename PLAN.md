@@ -148,17 +148,25 @@ game/index.html                       单文件游戏，零依赖
 | 10-19 晚 | 真浏览器跑通 + 录屏采集台 + README 顶部 GIF | ✅ |
 | 10-19 深夜 | **Papa's 式严格判定 + 收益腰斩 + 开局 ¥500** | ✅ |
 | 10-20 | 真机手感复核（重点：`Q_CORE` 完美带够不够宽） | 待做（需你上手） |
-| 10-21 | 仓库公开 + 5 个必需文件收口 | 文件已齐，**卡在推送** |
+| 10-21 | 仓库公开 + 5 个必需文件收口 | 文件已齐，`tools/publish.sh` 一条命令完成，**等你给 Token** |
 | 10-22 | **发 Issue 报名（硬节点，留 3 天缓冲）** | 待做 |
 | 10-23~25 | 推广拉 Star + 修 bug | 待做 |
 
 **硬节点：10-22 必须完成报名。**
 
-> ⚠️ 当前唯一的硬阻塞：**`git push` 推不上去**。两个原因叠加，都不是代码问题：
-> 1. 沙箱网络只放通 `api.github.com`，`github.com:443` 连不上（`CONNECT tunnel failed, response 502`）
-> 2. 本机没有任何 GitHub 凭据（`osxkeychain` 里查不到 github.com 条目），且仓库从来没有远端引用 → 这个仓库其实一次都没推成功过
+> ⚠️ 当前唯一的硬阻塞：**仓库 `RockeyLD/mcd-mogul` 根本不存在**。
 >
-> 解决办法：在能直连 github.com 的终端里 `git push origin main`，或用带 Token 的 URL 推一次。代码本身已提交在本地 `main`。
+> 10-20 复查的结论：`api.github.com/repos/RockeyLD/mcd-mogul` 返回 404，而你名下的 4 个公开仓库里没有它。
+> 所以不是"推不上去"，是从来没有远端可推；网络本身已经通了（`github.com` 200，之前是 502）。
+>
+> 剩下的只差凭据。`tools/publish.sh` 把「建仓库 → 推 main → 开 Pages」串成一条命令：
+>
+> ```bash
+> export GITHUB_TOKEN=ghp_xxx     # repo 权限；fine-grained 给 Contents 读写 + Pages 读写
+> bash tools/publish.sh           # 加 --dry-run 只看流程，不动线上
+> ```
+>
+> Token 只在命令行出现一次，不写进 `.git/config`。跑完仓库和试玩链接都会有。
 
 
 ---
@@ -171,6 +179,7 @@ game/index.html                       单文件游戏，零依赖
 - [x] `tools/harness.js` —— 无头测试台（jsdom 虚拟时钟）
 - [x] `tools/shoot-gif.js` + `tools/make-gif.py` —— 录屏采集与 GIF 合成
 - [x] `tools/shoot-shots.js` —— 五座工位截图（可复现，不是一次性脚本拍完就没了）
+- [x] `tools/publish.sh` —— 建仓库 / 推送 / 开 Pages 一条命令，`--dry-run` 可空跑
 - [x] `data/economy.json` + `tools/sync-economy.js` —— 经济参数的唯一真相来源，改数值不用连 MCP
 - [x] `docs/demo.gif` —— **README 顶部真实玩法录屏**
 - [x] `SKILL.md` —— Skill 定义（让 WorkBuddy 一句话重新拉数据）
@@ -388,4 +397,31 @@ CDP 截图、字体回退这些它一概不管。要拿真机截图当门面，�
    取景要的是锅里有货，不是把这张单做出来
 5. **`没打满，倒了` 飘到煎区画面上**：那是饮料站留下的 toast（1.4 秒才消失），
    切站时正好还在。截图前统一清 `.toast`
+
+### 2026-10-20 · 查清"推不上去"的真正原因
+
+前面一直以为是网络 + 凭据双重问题。复查发现真正的结论更简单：
+
+**`RockeyLD/mcd-mogul` 这个仓库不存在。**
+
+```
+GET /repos/RockeyLD/mcd-mogul   → 404
+GET /users/RockeyLD/repos       → 4 个公开仓库，没有 mcd-mogul
+github.com:443                  → 200（之前是 502，现在通了）
+security find-internet-password → 没有 github.com 条目（凭据确实没有）
+```
+
+所以「从来没有远端引用」不是果，是因——远端压根没建。
+
+补了 `tools/publish.sh`：建仓库（`POST /user/repos`，不初始化 README）→ 用 `x-access-token`
+形式的 URL 推一次 main → `POST /repos/.../pages` 开 Pages。Token 不落盘到 `.git/config`。
+`--dry-run` 空跑验证过流程，三个分支的输出都对着。
+
+**踩的坑**
+
+1. `ok "...（$_code）..."` 里变量后面紧跟全角括号，bash 把 `）` 当成变量名的一部分，
+   报 `_code?: unbound variable`。所有变量引用改成 `${_code}` 就不会有这问题
+2. Pages 域名写成了 `$OWNER.github.io`，输出成 `RockeyLD.github.io`。GitHub 的 Pages
+   域名是全小写，虽然浏览器能解析，但写进仓库 homepage 字段要规范——用 `tr` 转一下
+
 
