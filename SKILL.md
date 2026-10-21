@@ -36,7 +36,18 @@ MCD_MCP_TOKEN=<token> node tools/pull-mcp.js --store <storeCode>
 
 先跑一次 `--dry` 看拉回来的东西对不对，再正式跑。
 
-期望看到：门店名、在线商品数（约 116）、营养条目（约 158）、今日活动、6 份汉堡配料。任何一步报错，把这个 Tool 的名字和错误原文告诉用户，不要静默跳过。
+期望看到：门店名、当日全部在售项、营养条目（约 158）、今日活动、6 份汉堡配料。任何一步报错，把这个 Tool 的名字和错误原文告诉用户，不要静默跳过。在售项数量每天会变（10-19 是 116，10-21 是 109），别拿某个具体数字当判据。
+
+### 2.5 核价（可选，但值得跑）
+
+```bash
+node tools/check-price.js          # 写 data/price-check.json
+node tools/check-price.js --dry    # 只打印
+```
+
+它另外调 `calculate-price`，把 6 款堡的「单点三件」与「同名套餐」各算一次，并做三方对价（快照 / `query-meals` / `calculate-price`）。用户问"这单在真实门店多少钱""套餐能省多少"时，答案从这里来，不要自己用单价加总糊一个数——套餐价 `calculate-price` 才算得出。
+
+> 两个 Tool 单位不同：`query-meals.currentPrice` 是元，`calculate-price` 的各项金额是分。加总时用 `check-price.js` 里的 `fromYuan()` / `fromCents()`，别混。
 
 ### 3. 打开游戏
 

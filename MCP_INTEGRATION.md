@@ -67,9 +67,9 @@ MCD_MCP_TOKEN=<你的 Token> node tools/pull-mcp.js --store 1421136
 { "storeCode": "1421136", "orderType": 1, "beType": 1 }
 ```
 
-真实返回里 `data.meals` **是一个以商品 code 为键的对象，不是数组**（这一点和文档示例不一致，第一次接的时候踩了）。当前门店返回 116 个在售项，含套餐、周边。
+真实返回里 `data.meals` **是一个以商品 code 为键的对象，不是数组**（这一点和文档示例不一致，第一次接的时候踩了）。10-19 拉取当天返回 116 个在售项，含套餐、周边；10-21 复查是 109 个——门店上下架会让这个数每天变，代码里不要按固定条数断言。
 
-**用在哪：** 五座工位的选品条。从 116 项里挑出 13 款真实单品，名称、售价、原价全部原样取用，没有一处是手写死数。
+**用在哪：** 五座工位的选品条。从当日全部在售项里挑出 13 款真实单品，名称、售价、原价全部原样取用，没有一处是手写死数。
 
 | 工位 | 商品（真实售价） |
 |---|---|
@@ -142,6 +142,42 @@ MCD_MCP_TOKEN=<你的 Token> node tools/pull-mcp.js --store 1421136
 
 > 这个 Tool 失败不阻塞主流程，`pull-mcp.js` 里用 try/catch 兜住——活动日历挂了，游戏照样能拉数据、照样能玩。
 
+### 2.6 `calculate-price`
+
+> 整单核价。这是唯一能回答"这一单最后到底多少钱"的 Tool——`query-meals` 给的是单品标价，优惠、套餐价只有它算得出来。
+
+```json
+{
+  "storeCode": "1421136",
+  "orderType": 1,
+  "beType": 1,
+  "items": [
+    { "productCode": "1100", "quantity": 1 },
+    { "productCode": "4810", "quantity": 1 },
+    { "productCode": "9900008751", "quantity": 1 }
+  ]
+}
+```
+
+返回 `price` / `originalPrice` / `discount` 与逐项的 `productList[]`（带 `subtotal`）。
+
+**用在哪：** `tools/check-price.js` 把 6 款堡逐个核一遍，比对「单点三件」与「同名套餐」：
+
+| 堡 | 单点（堡+中薯+中可） | 套餐 | 省 |
+|---|---|---|---|
+| 巨无霸 | ¥50.00 | 巨无霸三件套 ¥37.00 | ¥13.00 |
+| 板烧鸡腿堡 | ¥48.00 | 板烧鸡腿堡三件套 ¥35.00 | ¥13.00 |
+| 麦辣鸡腿汉堡 | ¥47.00 | 麦辣鸡腿汉堡三件套 ¥34.00 | ¥13.00 |
+| 麦香鸡 | ¥41.00 | 麦香鸡套餐 ¥28.00 | ¥13.00 |
+| 麦香鱼 | ¥46.50 | 麦香鱼套餐 ¥33.50 | ¥13.00 |
+| 双层吉士汉堡 | ¥47.00 | 双层吉士汉堡套餐 ¥34.00 | ¥13.00 |
+
+结果落在 `data/price-check.json`，`node tools/check-price.js` 可随时重跑。同一份文件里还做了**三方对价**：`data/snapshot.json` 里的价、`query-meals` 报的价、`calculate-price` 算出来的价，6 款全部一致——这是"价格不是编的"最直接的证据。
+
+套餐里装的是哪三样，不是我们配的，来自 `query-meal-detail` 的 `rounds`：第 1 轮「新升级巨无霸」、第 2 轮「选择套餐内小食→中薯条」、第 3 轮饮料。6 款套餐的 `rounds` 结构一致，所以才能统一省 ¥13。
+
+> ⚠️ **单位陷阱**：`query-meals` 的 `currentPrice` 是**元**（巨无霸 `26`），`calculate-price` 的 `price` 是**分**（`2600`）。两个 Tool 回的价不是一个量纲，混用会把 ¥26 算成 ¥0.26。`check-price.js` 里用 `fromYuan()` / `fromCents()` 两个函数分开换算，谁也别偷懒。
+
 ---
 
 ## 3. 一次完整调用
@@ -175,6 +211,9 @@ POST https://mcp.mcd.cn
 | `modification.items` 以为是"可加配料" | 里面混着默认配料，靠 `selectedQuantity` 区分 | `> 0` 才是默认 |
 | 商品名带 `【】` 和中文引号，票面上放不下 | 「【美汁源】"黄金橙橙"」有 11 个字 | `shortName()` 去前缀去引号，超 6 字截断 |
 | 返回 `success:false` 但 HTTP 200 | 业务失败不走 HTTP 状态码 | 先判 `structuredContent.success` |
+| `query-meals.currentPrice` 和 `calculate-price.price` 都叫"价" | 前者是**元**（26），后者是**分**（2600） | `fromYuan()` / `fromCents()` 分开换算 |
+| `calculate-price` 的 `items[]` 传 `{code, quantity}` 返回全 0 | 字段名是 `productCode`，不是 `code`；不报错，就是静静地算成 0 | 按 schema 写 `productCode`，并对 `price===0` 做断言 |
+| 套餐想用 `roundList` 自己拼 | 传了会 `Cannot read properties of undefined`，直接错 | 套餐直接传套餐的 `productCode`，子项交给 MCP |
 
 ---
 
@@ -191,6 +230,7 @@ POST https://mcp.mcd.cn
 2. **零人工配表**：13 款商品、6 份配方、158 条营养全部程序化生成，没有一张手填的 Excel。
 3. **可信度**：玩家在游戏里看到的 ¥26 巨无霸、5 层配料，和门口那家店是一致的——这对一个"经营游戏"来说是最基本也最难做到的事。
 4. **可迁移**：`tools/pull-mcp.js` 和游戏完全解耦。MCP 结构一变，只改这一个文件；要接"就近门店"也只需要把 `--store` 换成 `query-nearby-stores` 的返回值。
+5. **价格能算，不只是能取**：`calculate-price` 让"这一单多少钱"从"我以为是 50"变成"接口说是 37"。这直接回答了一个做菜游戏最容易被质疑的地方——你凭什么说这份餐值这个价。
 
 ---
 
@@ -202,13 +242,16 @@ MCD_MCP_TOKEN=<token> node tools/pull-mcp.js --dry
 
 # 正式拉取：写 data/snapshot.json 并注入 game/index.html
 MCD_MCP_TOKEN=<token> node tools/pull-mcp.js --store 1421136
+
+# 整单核价：写 data/price-check.json（6 款堡的单点 vs 套餐）
+MCD_MCP_TOKEN=<token> node tools/check-price.js
 ```
 
 期望输出：
 
 ```
 ▶ 拉取门店…   门店：麦当劳深圳腾讯总部园区一店餐厅（1421136）
-▶ 拉取菜单…   在线商品 116 项
+▶ 拉取菜单…   在线商品 116 项（当天数量，会随门店上下架变化）
 ▶ 拉取营养表… 营养条目 158 条
 ▶ 拉取活动日历… 今日活动：超值𝟗.𝟗元早餐两件套陪你开工啦
 ▶ 拉取汉堡配料（6 次）…
@@ -226,8 +269,9 @@ Token 只从环境变量 / `tools/.mcd-token` / 本机 `~/.workbuddy/mcp.json` �
 ## 7. 怎么核验这不是编的
 
 规则只要求"参赛项目须真实使用麦当劳 MCP 能力"，没规定调用必须发生在运行时。本项目把调用放在数据管线里：
-`tools/pull-mcp.js` 用 Token 直连 `mcp.mcd.cn` 拉 5 个 Tool，落成 `data/snapshot.json` 再注入游戏。
-浏览器里零联网（原因见第 1 节那三条）。
+`tools/pull-mcp.js` 用 Token 直连 `mcp.mcd.cn` 拉 5 个 Tool，落成 `data/snapshot.json` 再注入游戏；
+`tools/check-price.js` 另外调 `calculate-price` 做整单核价，结果落成 `data/price-check.json`。
+两个脚本合计用到 6 个 Tool。浏览器里零联网（原因见第 1 节那三条）。
 
 但"我调过"这种话谁都能说。所以留了几处**编不出来**的痕迹，供核验：
 
@@ -282,5 +326,24 @@ https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png
 MCD_MCP_TOKEN=<你的 Token> node tools/pull-mcp.js --dry     # 只打印，不写文件
 ```
 
-拿到自己的 Token 跑一次，输出会和本文第 2 节贴的返回一致（门店、116 项商品、158 条营养、今日活动）。
+拿到自己的 Token 跑一次，输出会和本文第 2 节贴的返回一致（门店、当日全部在售项、158 条营养、今日活动）。
+
+### 7.6 三个来源对得上同一个价
+
+`tools/check-price.js` 把同一款堡的价从三个地方各取一次：
+
+| 来源 | 巨无霸 | 麦香鱼 |
+|---|---|---|
+| `data/snapshot.json`（10-19 拉的） | ¥26.00 | ¥22.50 |
+| `query-meals.currentPrice`（现查） | ¥26.00 | ¥22.50 |
+| `calculate-price` 整单里的 `subtotal`（现算） | ¥26.00 | ¥22.50 |
+
+三条路径、三种返回结构、两种单位（元 / 分），对 6 款堡全部一致。**编数据的人不会去对齐三个接口的量纲。**
+
+更硬的一条：6 款堡的同名套餐**全部**恰好省 ¥13.00。这个数不是抽出来的，是 `calculate-price` 按门店、按渠道实算的——换成外送（`orderType: 2`）或另一家店，差就不是 13 了。自己验：
+
+```bash
+node tools/check-price.js --dry
+```
+
 

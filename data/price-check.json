@@ -1,0 +1,304 @@
+{
+  "_说明": "calculate-price 整单核价结果。单点＝堡+中薯+中可各一份，套餐＝同名三件套。价格单位元。此文件不含 Token，可随仓库公开。",
+  "meta": {
+    "source": "麦当劳 MCP（mcp.mcd.cn）",
+    "pulledAt": "2026-10-21 12:31:58",
+    "store": {
+      "storeCode": "1421136",
+      "storeName": "麦当劳深圳腾讯总部园区一店餐厅"
+    },
+    "orderType": 1,
+    "beType": 1,
+    "tools": [
+      "query-meals",
+      "query-meal-detail",
+      "calculate-price"
+    ]
+  },
+  "itemPriceCheck": [
+    {
+      "code": "1100",
+      "name": "巨无霸",
+      "snapshotPrice": 26,
+      "menuPrice": 26,
+      "calcPrice": 26,
+      "ok": true
+    },
+    {
+      "code": "1406",
+      "name": "板烧鸡腿堡",
+      "snapshotPrice": 24,
+      "menuPrice": 24,
+      "calcPrice": 24,
+      "ok": true
+    },
+    {
+      "code": "1440",
+      "name": "麦辣鸡腿汉堡",
+      "snapshotPrice": 23,
+      "menuPrice": 23,
+      "calcPrice": 23,
+      "ok": true
+    },
+    {
+      "code": "1450",
+      "name": "麦香鸡",
+      "snapshotPrice": 17,
+      "menuPrice": 17,
+      "calcPrice": 17,
+      "ok": true
+    },
+    {
+      "code": "1600",
+      "name": "麦香鱼",
+      "snapshotPrice": 22.5,
+      "menuPrice": 22.5,
+      "calcPrice": 22.5,
+      "ok": true
+    },
+    {
+      "code": "1120",
+      "name": "双层吉士汉堡",
+      "snapshotPrice": 23,
+      "menuPrice": 23,
+      "calcPrice": 23,
+      "ok": true
+    }
+  ],
+  "combos": [
+    {
+      "burger": {
+        "code": "1100",
+        "name": "巨无霸"
+      },
+      "singles": {
+        "burger": 26,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 50,
+      "combo": {
+        "code": "9900005466",
+        "name": "巨无霸三件套",
+        "price": 37
+      },
+      "rounds": [
+        {
+          "round": "新升级巨无霸",
+          "picked": [
+            "巨无霸"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    },
+    {
+      "burger": {
+        "code": "1406",
+        "name": "板烧鸡腿堡"
+      },
+      "singles": {
+        "burger": 24,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 48,
+      "combo": {
+        "code": "9900005462",
+        "name": "板烧鸡腿堡三件套",
+        "price": 35
+      },
+      "rounds": [
+        {
+          "round": "板烧鸡腿堡",
+          "picked": [
+            "板烧鸡腿堡"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    },
+    {
+      "burger": {
+        "code": "1440",
+        "name": "麦辣鸡腿汉堡"
+      },
+      "singles": {
+        "burger": 23,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 47,
+      "combo": {
+        "code": "9900005456",
+        "name": "麦辣鸡腿汉堡三件套",
+        "price": 34
+      },
+      "rounds": [
+        {
+          "round": "麦辣鸡腿汉堡",
+          "picked": [
+            "麦辣鸡腿汉堡"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    },
+    {
+      "burger": {
+        "code": "1450",
+        "name": "麦香鸡"
+      },
+      "singles": {
+        "burger": 17,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 41,
+      "combo": {
+        "code": "9900005453",
+        "name": "麦香鸡套餐",
+        "price": 28
+      },
+      "rounds": [
+        {
+          "round": "麦香鸡",
+          "picked": [
+            "麦香鸡"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    },
+    {
+      "burger": {
+        "code": "1600",
+        "name": "麦香鱼"
+      },
+      "singles": {
+        "burger": 22.5,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 46.5,
+      "combo": {
+        "code": "9900005460",
+        "name": "麦香鱼套餐",
+        "price": 33.5
+      },
+      "rounds": [
+        {
+          "round": "麦香鱼",
+          "picked": [
+            "麦香鱼"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    },
+    {
+      "burger": {
+        "code": "1120",
+        "name": "双层吉士汉堡"
+      },
+      "singles": {
+        "burger": 23,
+        "fries": 14.5,
+        "drink": 9.5
+      },
+      "singlePrice": 47,
+      "combo": {
+        "code": "9900005464",
+        "name": "双层吉士汉堡套餐",
+        "price": 34
+      },
+      "rounds": [
+        {
+          "round": "双层吉士汉堡",
+          "picked": [
+            "双层吉士汉堡"
+          ]
+        },
+        {
+          "round": "选择套餐内小食",
+          "picked": [
+            "中薯条"
+          ]
+        },
+        {
+          "round": "选择套餐内饮料",
+          "picked": [
+            "可乐中杯"
+          ]
+        }
+      ],
+      "save": 13
+    }
+  ],
+  "summary": {
+    "burgerCount": 6,
+    "comboCount": 6,
+    "avgSave": 13,
+    "maxSave": 13
+  }
+}

@@ -11,7 +11,7 @@
 |---|---|
 | 开发工具 | WorkBuddy（Agent 模式，含命令行执行与浏览器预览） |
 | 开发周期 | 2026-10-12 起，2026-10-19 完成主体 |
-| 接入能力 | 麦当劳 MCP Server（`mcp.mcd.cn`，Streamable HTTP，5 个 Tool） |
+| 接入能力 | 麦当劳 MCP Server（`mcp.mcd.cn`，Streamable HTTP，6 个 Tool） |
 | 主要产物 | `game/index.html`（单文件游戏）、`tools/pull-mcp.js`（MCP 数据管线） |
 | 验证方式 | jsdom 虚拟时钟机器人跑分 + Chrome headless 截图逐个工位验收 |
 
@@ -23,7 +23,7 @@
 
 **人：** 我想参加这个比赛（附官方仓库链接），你能教我吗？
 
-**WorkBuddy：** 读了官方 README、活动规则、MCP 使用指南，梳理出报名硬条件（Public 仓库、5 个文件、Issue 格式）、评审维度（Star 数排名）、以及"必须真实调用 MCP"这条红线。
+**WorkBuddy：** 读了官方 README、活动规则、MCP 使用指南，梳理出报名硬条件（Public 仓库、5 个文件、Issue 格式）、评审维度（Star 数排名）、以及"须真实使用麦当劳 MCP 能力"这条硬条件。
 
 **人：** 这个不好，没啥用。（否掉第一版"麦麦周报"）
 

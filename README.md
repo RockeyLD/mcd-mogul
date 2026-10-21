@@ -37,6 +37,30 @@
 
 **"数据是不是编的"有据可查**：`data/snapshot.json` 里 13 款商品的千卡与三大营养素全部满足 Atwater 系数（4/4/9），误差 −1~+13；商品图指向 `menu-img.mcd.cn` 的批次化 CDN 路径；巨无霸的 5 层配方顺序来自 `query-meal-detail` 的 `selectedQuantity`。逐条复核方法见 [MCP_INTEGRATION.md §7](./MCP_INTEGRATION.md#7-怎么核验这不是编的)。
 
+### 这算一个 Skill 吗
+
+规则对 Skill 的定义是「能够实现信息查询、业务处理、决策辅助、内容生成、任务执行等目的的**应用程序**、智能体、插件、自动化流程、工作流或其他软件功能模块」——游戏属于"应用程序"，在范围内。
+
+本仓库交了两种形态，它们用的是同一套数据和同一个 MCP Token：
+
+| 形态 | 入口 | 谁在用 Token |
+|---|---|---|
+| **可调用的 Skill** | `SKILL.md`（WorkBuddy 里说一句"开一局麦麦大亨"） | 触发时由 Agent 现拉当天数据，Token 在你本机 |
+| **能直接玩的成品** | `game/index.html` / 在线试玩 | 谁都不需要，数据已烘进文件 |
+
+也就是说：**Token 不是给玩家用的，是给"造这局游戏"用的**——拉数据要它，核价要它，Skill 被调用时要它。浏览器里传 Token 等于当众报银行卡号，这件事只有静态页面时尤其致命。
+
+---
+
+## 给谁玩的
+
+- **想摸鱼两分钟的人** —— 一天 60 秒，一局 5 天，随时能关。免安装、免登录、免 Token
+- **吃麦当劳长大的那批人** —— 菜单、价格、配料顺序、营养全是真的。看到巨无霸 5 层里夹着酸黄瓜，会想把它挑掉（游戏里真能挑）
+- **做前端的人** —— 一个文件、2400 行、纯手写 SVG + CSS + WebAudio，没有一张图、一个字体、一段音频。整份拖走就能改
+- **想拿它当教材的人** —— `tools/` 里是一整套可复现的东西：MCP 数据管线、jsdom 虚拟时钟机器人跑分、CDP 录屏。想学"怎么让机器人替你测一个游戏"，直接看
+
+也适合给小孩玩——规则只有一条：看票、做菜、点出餐。做糊了不给钱，这一点比大多数手游诚实。
+
 ---
 
 ## 在线试玩
@@ -116,10 +140,20 @@
 | 游戏里的东西 | 来自哪个 Tool |
 |---|---|
 | 门店名、地址 | `query-nearby-stores` |
-| 13 款商品的名称与价格 | `query-meals`（116 个在售项里挑出的单品） |
+| 13 款商品的名称与价格 | `query-meals`（从拉取当日的全部在售项里挑出的单品） |
 | 6 份汉堡的真实配料与顺序 | `query-meal-detail` 的 `modification`（`selectedQuantity > 0`） |
 | 热量/蛋白/脂肪/碳水/钠 | `list-nutrition-foods`（158 条） |
 | 今日活动 | `campaign-calendar` |
+| **整单价格核对、套餐价** | `calculate-price` |
+
+`calculate-price` 单独说，因为它是唯一能给出「整单成立价」的 Tool：
+
+```
+巨无霸 + 中薯条 + 可乐中杯   单点  ¥50.00
+巨无霸三件套                 套餐  ¥37.00   省 ¥13.00
+```
+
+6 款堡全部核过，**统一省 ¥13.00**，结果落在 `data/price-check.json`。套餐里到底装的是哪三样，也来自 `query-meal-detail` 的 `rounds`（第 1 轮「新升级巨无霸」、第 2 轮「选择套餐内小食→中薯条」、第 3 轮饮料），不是我们拼的。想自己复核：`node tools/check-price.js`。
 
 拉回来的数据先落成 `data/snapshot.json`，再注入 `game/index.html` 的内嵌数据块。**游戏本身不联网**，双击就能玩，但内容是真数据。
 
@@ -215,7 +249,7 @@ node tools/pull-mcp.js --dry
 
 ```
 ▶ 拉取门店…   门店：麦当劳深圳腾讯总部园区一店餐厅（1421136）
-▶ 拉取菜单…   在线商品 116 项
+▶ 拉取菜单…   在线商品 116 项（当天数量，会随门店上下架变化）
 ▶ 拉取营养表… 营养条目 158 条
 ▶ 拉取汉堡配料（6 次）…
   巨无霸 → 巨无霸酱、吉士、生菜、酸黄瓜、洋葱粒
@@ -235,8 +269,10 @@ node tools/pull-mcp.js --dry
 .
 ├── game/index.html          单文件游戏。SVG + CSS + WebAudio，无外部依赖
 ├── data/snapshot.json       最近一次拉取的真实数据快照（可核对）
+├── data/price-check.json    整单核价结果：6 款堡的单点价 vs 套餐价
 ├── data/economy.json        经济与评级参数（唯一真相来源，改数值只改这里）
 ├── tools/pull-mcp.js        MCP 数据管线：一条命令刷新快照并注入游戏
+├── tools/check-price.js     整单核价：calculate-price 算单点与套餐，并做三方对价
 ├── tools/harness.js         无头测试台：jsdom 虚拟时钟 + 三档机器人跑完整 5 天
 ├── tools/sync-economy.js    只同步经济数值，不需要 MCP Token
 ├── tools/shoot-gif.js       录屏采集：CDP 驱动无头 Chrome，让机器人真的在玩，逐帧截图
