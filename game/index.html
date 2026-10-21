@@ -1132,6 +1132,7 @@ function makeOrderWant(day){
 function renderTitle(){
   var store = (META.store && META.store.storeName) ? META.store.storeName : '示例门店';
   var camp = META.campaign && META.campaign.title ? META.campaign.title : '';
+  var pulled = META.pulledAt ? String(META.pulledAt).slice(0, 10) : '';
   var n = Object.keys(DISH).length;
   app.innerHTML =
   '<div class="sheet">' +
@@ -1154,7 +1155,7 @@ function renderTitle(){
       '房租每天涨 ¥' + (ECON.rentStep||18) + '，跑单要赔钱。做得越准，小费越多。</p>' +
     '<p class="src">门店 <b>' + esc(store) + '</b> · 菜单 <b>' + n + ' 款真实在售</b>' +
       (camp ? '<br>今日活动 <b>' + esc(camp) + '</b>' : '') +
-      '<br>数据来自麦当劳 MCP（mcp.mcd.cn）' +
+      '<br>数据来自麦当劳 MCP（mcp.mcd.cn）' + (pulled ? ' · 拉取于 ' + esc(pulled) : '') +
       '<br>非麦当劳官方产品 · 麦当劳程序员节创意开发大赛参赛作品</p>' +
   '</div>';
   el('go').addEventListener('click', startDay);
