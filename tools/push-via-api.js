@@ -116,17 +116,57 @@ function localIso(ts, tz) {
 /* ── 主流程 ───────────────────────────────────────────────── */
 (async () => {
   const list = commits();
-  console.log('本地 ' + list.length + ' 个 commit，准备重建到 ' + OWNER + '/' + REPO + '#' + BRANCH);
+  console.log('本地 ' + list.length + ' 个 commit，目标 ' + OWNER + '/' + REPO + '#' + BRANCH);
 
-  // 1) 收集所有唯一 blob
+  /* 0) 远端已有历史就只推增量。
+        全量重建要把一百多个 blob 一个个重新上传，两分钟起步；
+        而绝大多数时候只是多了一两个 commit，纯属自己折腾自己。 */
+  let startAt = 0;
+  let parent = null;
+  if (!DRY) {
+    try {
+      const ref = await api('GET', '/repos/' + OWNER + '/' + REPO + '/git/ref/heads/' + BRANCH);
+      const rsha = ref.object.sha;
+      const idx = list.indexOf(rsha);
+      if (idx === list.length - 1) {
+        console.log('  远端已是最新（' + rsha.slice(0, 7) + '），没有要推的');
+        return;
+      }
+      if (idx >= 0) {
+        startAt = idx + 1;
+        parent = rsha;
+        console.log('  远端在 ' + rsha.slice(0, 7) + '，只推后面 ' + (list.length - startAt) + ' 个');
+      } else {
+        console.log('  ⚠ 远端 sha 不在本地历史里（' + rsha.slice(0, 7) + '），回退成全量重建');
+      }
+    } catch (e) {
+      if (e.status !== 404 && e.status !== 409) throw e;
+      // 空仓库：Git Data API 一律 409「Git Repository is empty」，
+      // 先用 Contents API 落一个占位提交，等 ref 顶到我们的历史后它就成孤儿了。
+      await api('PUT', '/repos/' + OWNER + '/' + REPO + '/contents/.gitkeep', {
+        message: 'init',
+        content: Buffer.from('').toString('base64'),
+        branch: BRANCH
+      });
+      console.log('  空仓库 → 落了占位提交，Git Data API 可用');
+    }
+  }
+
+  // 1) 收集要推的 blob
   const blobs = new Map();      // oid -> path（取第一个作为来源）
   const trees = new Map();      // commit -> items
-  for (const c of list) {
+  for (const c of list.slice(startAt)) {
     const items = parseTree(c);
     trees.set(c, items);
     for (const it of items) if (!blobs.has(it.oid)) blobs.set(it.oid, it.path);
   }
-  const total = [...blobs.values()].reduce((n, p) => n + fs.statSync(path.join(ROOT, p)).size, 0);
+  // 大小从对象库问（git cat-file -s），别去 stat 工作区 ——
+  // 历史里被删掉的文件工作区早没了，stat 会 ENOENT 把整条推送打断。
+  const sizeOf = oid => {
+    try { return Number(git('cat-file', '-s', oid).toString().trim()) || 0; }
+    catch (e) { return 0; }
+  };
+  const total = [...blobs.keys()].reduce((n, oid) => n + sizeOf(oid), 0);
   console.log('唯一 blob ' + blobs.size + ' 个，合计 ' + (total / 1048576).toFixed(2) + ' MB');
 
   if (DRY) {
@@ -136,21 +176,6 @@ function localIso(ts, tz) {
     }
     console.log('干跑结束，未改动远端');
     return;
-  }
-
-  // 1.5) 空仓库踢一脚：全空时 Git Data API 一律 409「Git Repository is empty」，
-  //      先用 Contents API 落一个占位提交，等 ref 顶到我们的历史后它就成孤儿了。
-  try {
-    await api('GET', '/repos/' + OWNER + '/' + REPO + '/git/ref/heads/' + BRANCH);
-    console.log('  远端已有提交，跳过占位');
-  } catch (e) {
-    if (e.status !== 404 && e.status !== 409) throw e;
-    await api('PUT', '/repos/' + OWNER + '/' + REPO + '/contents/.gitkeep', {
-      message: 'init',
-      content: Buffer.from('').toString('base64'),
-      branch: BRANCH
-    });
-    console.log('  空仓库 → 落占位提交，Git Data API 可用');
   }
 
   // 2) 上传 blob（内容寻址，同一内容只传一次；返回 sha 必须与本地一致）
@@ -171,11 +196,11 @@ function localIso(ts, tz) {
   }
   console.log();
 
-  // 3) 逐 commit 建 tree + commit
-  let parent = null;
+  // 3) 逐 commit 建 tree + commit（parent 已由步骤 0 定好，增量时就是远端那个 sha）
   let sameCount = 0;
   const map = new Map();        // 本地 commit -> 远端 commit
-  for (const c of list) {
+  const pending = list.slice(startAt);
+  for (const c of pending) {
     const items = trees.get(c);
     const treeRes = await api('POST', '/repos/' + OWNER + '/' + REPO + '/git/trees', {
       tree: items.map(it => ({
@@ -197,8 +222,8 @@ function localIso(ts, tz) {
       + '  ' + meta.message.split('\n')[0].slice(0, 42));
     sameCount += same ? 1 : 0;
   }
-  if (sameCount === list.length) console.log('  所有 commit 的 sha 与本地完全一致 —— 远端与本地没有分叉，以后直接 git push 即可');
-  else console.log('  ' + sameCount + '/' + list.length + ' 个 sha 与本地一致，其余不同（内容仍逐字节相同）');
+  if (sameCount === pending.length) console.log('  ' + pending.length + ' 个 commit 的 sha 与本地完全一致 —— 远端与本地没有分叉');
+  else console.log('  ' + sameCount + '/' + pending.length + ' 个 sha 与本地一致，其余不同（内容仍逐字节相同）');
 
   // 4) 建 ref（已存在就强制指过去）
   const head = map.get(list[list.length - 1]);
