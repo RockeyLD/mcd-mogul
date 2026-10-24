@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>麦麦大亨 · 后厨 — 拉票海报</title>
+<style>
+  :root{
+    --cream:#FFF7EE; --paper:#FFFFFF;
+    --ink:#2C2118; --dim:#8A7864; --dimmer:#B0A08C;
+    --red:#DA291C; --red-d:#B01F14; --yellow:#FFC72C;
+    --line:#EBDFD0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#ddd}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB",-apple-system,"Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;justify-content:center;
+  }
+
+  .poster{
+    width:1080px;height:1440px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(760px 520px at 101% -6%, rgba(255,199,44,.30), rgba(255,199,44,0) 68%),
+      radial-gradient(620px 460px at -10% 104%, rgba(218,41,28,.07), rgba(218,41,28,0) 70%),
+      var(--cream);
+    color:var(--ink);
+  }
+
+  /* ── 顶部红条 ── */
+  .bar{
+    height:58px;background:var(--red);display:flex;align-items:center;
+    justify-content:space-between;padding:0 64px;color:#fff;
+  }
+  .bar b{font-size:16px;font-weight:600;letter-spacing:.06em}
+  .bar span{font-size:14px;opacity:.8;letter-spacing:.04em}
+  .dots{display:flex;gap:5px;align-items:center}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--yellow);display:block}
+
+  .main{padding:54px 64px 0}
+
+  /* ── 标题区 ── */
+  .kick{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:19px;color:var(--dim);letter-spacing:.02em;
+  }
+  .kick em{
+    width:22px;height:22px;border-radius:6px;background:var(--yellow);
+    display:inline-flex;align-items:center;justify-content:center;font-style:normal;
+  }
+  h1{
+    font-family:"Hiragino Sans GB","PingFang SC",sans-serif;
+    font-size:104px;line-height:1.04;font-weight:600;
+    letter-spacing:.005em;margin:22px 0 0;
+  }
+  h1 .mid{color:var(--red);margin:0 -.11em;font-size:.9em;vertical-align:.03em}
+  .sub{font-size:30px;color:var(--dim);margin-top:20px;letter-spacing:.01em}
+
+  /* ── 中部：左卖点 / 右手机 ── */
+  .middle{display:flex;gap:46px;margin-top:44px;height:620px;align-items:stretch}
+  /* 卖点列撑满与手机同高，space-between 把 5 条均匀铺开，
+     否则左边早早收尾、左下角留一大块死白 */
+  .points{width:562px;display:flex;flex-direction:column;justify-content:space-between}
+
+  .pt{display:flex;gap:18px;align-items:flex-start}
+  .pt .ic{
+    width:52px;height:52px;flex:0 0 52px;border-radius:14px;
+    background:var(--paper);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 2px rgba(90,70,45,.05),0 4px 12px rgba(90,70,45,.05);
+  }
+  .pt .ic svg{width:26px;height:26px;display:block}
+  .pt b{
+    display:block;font-size:25px;font-weight:600;letter-spacing:.01em;
+    margin-bottom:5px;line-height:1.25;
+  }
+  .pt p{font-size:18px;line-height:1.55;color:var(--dim)}
+
+  /* 手机 */
+  .phone-wrap{position:relative;width:344px;flex:0 0 344px}
+  .phone{
+    width:344px;height:620px;border-radius:26px;overflow:hidden;
+    border:7px solid #fff;
+    box-shadow:0 2px 6px rgba(90,70,45,.10),0 24px 58px rgba(90,70,45,.20);
+    background:#fff;
+  }
+  .phone img{width:100%;height:100%;object-fit:cover;display:block}
+  .phone-cap{
+    position:absolute;left:0;right:0;bottom:-38px;text-align:center;
+    font-size:16px;color:var(--dim);letter-spacing:.02em;
+  }
+
+  /* ── 二维码卡 ── */
+  .qr-card{
+    position:absolute;left:64px;right:64px;top:1046px;
+    background:var(--ink);border-radius:26px;padding:26px 34px;
+    display:flex;align-items:center;gap:34px;
+    box-shadow:0 18px 44px rgba(44,33,24,.26);
+  }
+  .qr-box{
+    width:196px;height:196px;flex:0 0 196px;background:#fff;
+    border-radius:16px;padding:10px;display:flex;align-items:center;justify-content:center;
+  }
+  .qr-box img{width:100%;height:100%;display:block}
+  .qr-txt{color:#fff}
+  .qr-txt h2{
+    font-family:"Hiragino Sans GB","PingFang SC",sans-serif;
+    font-size:46px;font-weight:600;letter-spacing:.02em;line-height:1.1;
+  }
+  .qr-txt .hint{font-size:20px;color:#C3B39C;margin-top:10px;letter-spacing:.02em}
+  .qr-txt .url{
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:19px;color:var(--yellow);margin-top:18px;letter-spacing:-.01em;
+  }
+
+  /* ── 页脚 ── */
+  .foot{
+    position:absolute;left:0;right:0;bottom:0;padding-bottom:44px;text-align:center;
+  }
+  .star{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:18px;color:var(--dim);letter-spacing:.01em;
+  }
+  .star svg{width:19px;height:19px;display:block}
+  .star u{text-decoration:none;color:var(--ink);font-weight:600}
+  .copyright{font-size:15px;color:var(--dimmer);margin-top:14px;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="bar">
+    <b>麦当劳程序员节创意开发大赛</b>
+    <div class="dots"><i></i><i></i><i></i></div>
+    <span>参赛作品 · 非官方</span>
+  </div>
+
+  <div class="main">
+
+    <div class="kick">
+      <em>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2C2118" stroke-width="2.1"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.6 4.5v7"/><path d="M12 3.6v7.9"/><path d="M15.4 4.5v7"/>
+          <path d="M6 12.4h12l-1.5 7.4a1.5 1.5 0 0 1-1.47 1.2H8.97a1.5 1.5 0 0 1-1.47-1.2z"/>
+        </svg>
+      </em>
+      单文件 · 零依赖 · 打开就玩
+    </div>
+
+    <h1>麦麦大亨<span class="mid">·</span>后厨</h1>
+    <p class="sub">你就是站在后厨的那个人</p>
+
+    <div class="middle">
+      <div class="points">
+
+        <div class="pt">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DA291C" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5h16v5a2.5 2.5 0 0 0 0 4v5H4v-5a2.5 2.5 0 0 0 0-4z"/>
+              <path d="M9 9h6"/><path d="M9 12h6"/><path d="M9 15h3"/>
+            </svg>
+          </div>
+          <div>
+            <b>菜单是真的</b>
+            <p>13 款在售商品、6 份汉堡配方、158 行营养表，全部从麦当劳 MCP 拉回来。</p>
+          </div>
+        </div>
+
+        <div class="pt">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DA291C" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="8" height="9" rx="2"/>
+              <rect x="13" y="4" width="8" height="9" rx="2"/>
+              <path d="M3 16h18"/><path d="M5 20h14"/>
+            </svg>
+          </div>
+          <div>
+            <b>每一份都亲手做</b>
+            <p>薯条盯着油锅捞，可乐按住按钮打，汉堡先去煎区把肉饼两面煎好 —— 五座工位，轮着跑。</p>
+          </div>
+        </div>
+
+        <div class="pt">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DA291C" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="13.5" r="7.5"/>
+              <path d="M12 10v3.5l2.4 1.6"/><path d="M9.5 3h5"/>
+            </svg>
+          </div>
+          <div>
+            <b>一天 60 秒，共 5 天</b>
+            <p>从 ¥500 起步，房租每天涨 ¥18，跑单要赔钱。做糊了不给钱，做到线上才拿小费。</p>
+          </div>
+        </div>
+
+        <div class="pt">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DA291C" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 8.5 5.5 12 9 15.5"/><path d="M15 8.5 18.5 12 15 15.5"/>
+              <path d="M13 5.5 11 18.5"/>
+            </svg>
+          </div>
+          <div>
+            <b>一个 HTML 文件全装下</b>
+            <p>2390 行纯手写 SVG + CSS + WebAudio，没有一张图、一个字体、一段音频。</p>
+          </div>
+        </div>
+
+        <div class="pt">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#DA291C" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 8.5a15 15 0 0 1 19 0"/>
+              <path d="M5.8 12.2a10 10 0 0 1 12.4 0"/>
+              <path d="M9 15.9a5 5 0 0 1 6 0"/>
+              <circle cx="12" cy="19.6" r="1.3" fill="#DA291C" stroke="none"/>
+            </svg>
+          </div>
+          <div>
+            <b>断网也能玩</b>
+            <p>数据早就烘进文件里，飞机上、地铁里、老手机上，点开就是后厨。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone"><img src="../docs/shot_mobile.png" alt="手机上的麦麦大亨后厨"></div>
+        <div class="phone-cap">窄屏自动重排 · 手机直接玩</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="qr-card">
+    <div class="qr-box"><img src="qr.svg" alt="扫码试玩"></div>
+    <div class="qr-txt">
+      <h2>扫码开一局</h2>
+      <div class="hint">不用下载 · 不用登录 · 不用 Token</div>
+      <div class="url">rockeyld.github.io/mcd-mogul</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="star">
+      <svg viewBox="0 0 24 24" fill="#FFC72C" stroke="#DA291C" stroke-width="1.6"
+           stroke-linejoin="round">
+        <path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5-5.8-3.05-5.8 3.05 1.1-6.5-4.7-4.6 6.5-.95z"/>
+      </svg>
+      玩完顺手点个 Star：<u>github.com/RockeyLD/mcd-mogul</u>
+    </div>
+    <div class="copyright">非麦当劳官方产品 · 参赛作品</div>
+  </div>
+
+</div>
+</body>
+</html>
