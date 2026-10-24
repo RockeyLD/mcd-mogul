@@ -53,7 +53,7 @@
     font-size:104px;line-height:1.04;font-weight:600;
     letter-spacing:.005em;margin:22px 0 0;
   }
-  h1 .mid{color:var(--red);margin:0 -.11em;font-size:.9em;vertical-align:.03em}
+  h1 .mid{color:var(--red);margin:0 -.1em;font-size:.86em;vertical-align:-.06em}
   .sub{font-size:30px;color:var(--dim);margin-top:20px;letter-spacing:.01em}
 
   /* ── 中部：左卖点 / 右手机 ── */
@@ -102,16 +102,21 @@
     border-radius:16px;padding:10px;display:flex;align-items:center;justify-content:center;
   }
   .qr-box img{width:100%;height:100%;display:block}
-  .qr-txt{color:#fff}
+  .qr-txt{color:#fff;flex:1 1 auto;min-width:0}
   .qr-txt h2{
     font-family:"Hiragino Sans GB","PingFang SC",sans-serif;
-    font-size:46px;font-weight:600;letter-spacing:.02em;line-height:1.1;
+    font-size:40px;font-weight:600;letter-spacing:.02em;line-height:1.15;
   }
-  .qr-txt .hint{font-size:20px;color:#C3B39C;margin-top:10px;letter-spacing:.02em}
+  .qr-txt .hint{font-size:19px;color:#C3B39C;margin-top:9px;letter-spacing:.02em}
   .qr-txt .url{
     font-family:"SF Mono",Menlo,Consolas,monospace;
-    font-size:19px;color:var(--yellow);margin-top:18px;letter-spacing:-.01em;
+    font-size:18px;color:var(--yellow);margin-top:15px;letter-spacing:-.01em;
   }
+
+  /* 右侧小码：想先玩的人也有出口 */
+  .qr-play{flex:0 0 auto;text-align:center}
+  .qr-play .qr-box{width:112px;height:112px;flex:0 0 112px;padding:8px;border-radius:13px}
+  .play-cap{font-size:15px;color:#C3B39C;margin-top:10px;letter-spacing:.06em}
 
   /* ── 页脚 ── */
   .foot{
@@ -238,11 +243,15 @@
   </div>
 
   <div class="qr-card">
-    <div class="qr-box"><img src="qr.svg" alt="扫码试玩"></div>
+    <div class="qr-box"><img src="qr-repo.svg" alt="扫码去 GitHub 点 Star"></div>
     <div class="qr-txt">
-      <h2>扫码开一局</h2>
-      <div class="hint">不用下载 · 不用登录 · 不用 Token</div>
-      <div class="url">rockeyld.github.io/mcd-mogul</div>
+      <h2>扫码点个 Star</h2>
+      <div class="hint">打开后点右上角 Star（手机需先登录 GitHub）</div>
+      <div class="url">github.com/RockeyLD/mcd-mogul</div>
+    </div>
+    <div class="qr-play">
+      <div class="qr-box"><img src="qr-game.svg" alt="扫码试玩"></div>
+      <div class="play-cap">先玩一局</div>
     </div>
   </div>
 
@@ -252,7 +261,7 @@
            stroke-linejoin="round">
         <path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5-5.8-3.05-5.8 3.05 1.1-6.5-4.7-4.6 6.5-.95z"/>
       </svg>
-      玩完顺手点个 Star：<u>github.com/RockeyLD/mcd-mogul</u>
+      排名只看 Star 数 · <u>10 月 25 日 23:59 截止</u>
     </div>
     <div class="copyright">非麦当劳官方产品 · 参赛作品</div>
   </div>
